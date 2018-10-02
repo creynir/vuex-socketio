@@ -80,9 +80,10 @@ actions: {
 ```
 Where `socket_emit_` is a prefix for emit messages and `message` is a desired channel name
 
-For opening and closing the connection use: `socket_connect` && `socket_disconnect` actions
+**For opening and closing the connection use: `socket_connect` && `socket_disconnect` actions**
 
-You can also add some prefixes for default functions e.g. `socket_reconnect`,
+You can also add some prefixes for default functions, e.g.: `socket_reconnect`,
+
 where `socket_` is a mandatory prefix and `reconnect` is a function name
 
 ``` js
