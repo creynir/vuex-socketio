@@ -44,7 +44,6 @@ const socketPlugin = createSocketIoPlugin(socket, {emitPrefix: 'someEmitPrefix')
 ```
 The **default** value is `socket_emit_`
 
-In vuex:
 ``` js
 mutations: {
         socket_on_connect: (state,  status ) => {
@@ -66,13 +65,13 @@ Where `socket_on_` is a prefix for listener and `message` is a desired channel n
 
 #### Set up emiters
 **Emiters can be used only with actions**
+
 Define `socket.on` prefix:
 ``` js
 const socketPlugin = createSocketIoPlugin(socket, {onPrefix: 'someOnPrefix');
 ```
 Or use the **default** value: `socket_on_`
 
-In vuex:
 ``` js
 actions: {
         socket_emit_message: (context, message) => {},
@@ -89,7 +88,7 @@ where `socket_` is a mandatory prefix and `reconnect` is a function name
 ``` js
 const socketPlugin = createSocketIoPlugin(socket, {defaultPrefixes: ['socket_reconnect']);
 ```
-#### You can use only **actions** for emit messages. Only one prefix for each function can be used. Namespaces for store modules and for sockets are supported.
+#### Only one emitPrefix or onPrefix can be used at the same time. Namespaces for store modules and for sockets are supported.
 
 ``` js
 import Vue from 'vue'
