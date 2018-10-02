@@ -1,0 +1,37 @@
+{
+  "name": "vuex-socketio",
+  "description": "A Socket.io Plugin for Vuex",
+  "version": "0.0.5",
+  "author": "Mikhail Rogov",
+  "license": "MIT",
+  "scripts": {
+    "build": "webpack --progress --hide-modules"
+  },
+  "homepage": "https://github.com/creynir/vuex-socketio",
+  "bugs": "https://github.com/creynir/vuex-socketio/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/creynir/vuex-socketio.git"
+  },
+  "dependencies": {
+    "socket.io-client": "^2.0.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.11.4",
+    "babel-loader": "^6.2.5",
+    "babel-preset-es2015": "^6.3.13",
+    "webpack": "^2.2.0-rc.3"
+  },
+  "keywords": [
+    "vuejs",
+    "socket",
+    "vue",
+    "socket.io",
+    "websocket",
+    "socket.io-client",
+    "realtime",
+    "vuex",
+    "plugin",
+    "vuex-plugin"
+  ]
+}
