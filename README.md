@@ -1,6 +1,6 @@
 # vuex-socketio
 
-> Socket.io Vuex Plugin
+> Vuex plugin for Socket.io connection.
 
 ## Install
 
