@@ -40,7 +40,7 @@ export default new Vuex.Store({
 #### Set up listeners
 You may define prefix for `socket.on` with options object:
 ``` js
-const socketPlugin = createSocketIoPlugin(socket, {emitPrefix: 'someEmitPrefix');
+const socketPlugin = createSocketIoPlugin(socket, {onPrefix: 'someOnPrefix'});
 ```
 The **default** value is `socket_on_`
 
@@ -68,7 +68,7 @@ Where `socket_on_` is a prefix for listener and `message` is a desired channel n
 
 Define `socket.emit` prefix:
 ``` js
-const socketPlugin = createSocketIoPlugin(socket, {onPrefix: 'someOnPrefix');
+const socketPlugin = createSocketIoPlugin(socket, {emitPrefix: 'someEmitPrefix'});
 ```
 Or use the **default** value: `socket_emit_`
 
