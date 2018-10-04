@@ -92,7 +92,7 @@ where `socket_` is a mandatory prefix and `reconnect` is a function name
 ``` js
 const socketPlugin = createSocketIoPlugin(socket, {defaultPrefixes: ['socket_reconnect']);
 ```
-#### Only one emitPrefix or onPrefix can be used at the same time. Namespaces for store modules and for sockets are supported.
+#### Namespaces for store modules and for sockets are supported.
 
 ``` js
 import Vue from 'vue'
@@ -161,6 +161,10 @@ export default new Vuex.Store({
     plugins: [websocketPlugin]
 })
 ```
+### Hints
+**Only one emitPrefix or onPrefix can be used at the same time.**<br />
+**Channel name on server side should be declared in upper case.**<br />
+**Channel prefixes in actions and mutations should be written in lower case.**
 
 ### Example
 [demo](./demo)
