@@ -161,7 +161,7 @@ export default new Vuex.Store({
     plugins: [websocketPlugin]
 })
 ```
-### Hints
+### Notes
 **Only one emitPrefix or onPrefix can be used at the same time.**<br />
 **Channel name on server side should be declared in upper case.**<br />
 **Channel prefixes in actions and mutations should be written in lower case.**
