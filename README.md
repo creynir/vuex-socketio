@@ -127,7 +127,7 @@ export default new Vuex.Store({
 })
 ```
 
-#### With namespaced socket connection:
+#### Socket with namespace:
 
 ``` js
 import Vue from 'vue'
