@@ -1,6 +1,9 @@
 # vuex-socketio
+[![NPM version](https://img.shields.io/npm/v/vuex-socketio.svg)](https://www.npmjs.com/package/vuex-socketio)
+![Vuex v3 compatible](https://img.shields.io/badge/Vuex%20v3-compatible-green.svg)
+<a href="https://www.npmjs.com/package/vuex-socketio"><img src="https://img.shields.io/npm/dt/vuex-socketio.svg" alt="Downloads"></a>
 
-> Vuex plugin for Socket.io connection.
+> Vuex plugin for Socket.io-client.
 
 ## Install
 
