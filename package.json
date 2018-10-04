@@ -1,7 +1,8 @@
 {
   "name": "vuex-socketio",
-  "description": "A Socket.io Plugin for Vuex",
-  "version": "0.0.5",
+  "description": "A Socket.io-client Plugin for Vuex",
+  "version": "0.1.0",
+  "main": "dist/build.js",
   "author": "Mikhail Rogov",
   "license": "MIT",
   "scripts": {
@@ -13,6 +14,10 @@
     "type": "git",
     "url": "git+https://github.com/creynir/vuex-socketio.git"
   },
+  "files": [
+    "dist",
+    "src"
+  ],
   "dependencies": {
     "socket.io-client": "^2.0.0"
   },

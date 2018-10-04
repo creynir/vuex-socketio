@@ -18,6 +18,7 @@ export default function createSocketIoPlugin(socket, options) {
             /**Fire on all socket events,
              * trigger commitToStoreFunction
              *  @param packet with channel name and payload
+             *  @api private
              */
             const onevent = socket.onevent;
             socket.onevent = function (packet) {
@@ -29,6 +30,7 @@ export default function createSocketIoPlugin(socket, options) {
 
             /**Fire on all default events,
              * trigger commitToStoreFunction
+             * @api private
              */
             [
                 'connect',
@@ -51,6 +53,7 @@ export default function createSocketIoPlugin(socket, options) {
             /**Subscribe the socket.emit and default socket fn's to all related actions
              * by prefix, moduleNspList and socket namespace
              *  @param action
+             *  @api private
              */
             store.subscribeAction(action => {
                 if (checkType(action.type, _options.socketNsp + _options.emitPrefix, _options.modulesNspList)) {
@@ -73,6 +76,7 @@ export default function createSocketIoPlugin(socket, options) {
  *  @param channelName
  *  @param payload
  *  @param _options with storeMutations, onPrefix and modulesNspList
+ *  @api private
  */
 function commitToStore(store, channelName, payload, _options) {
     const channelNameLowCase = channelName.toLowerCase();
@@ -95,6 +99,7 @@ function commitToStore(store, channelName, payload, _options) {
  * @param type of function
  * @param prefix
  * @param modulesNspList with module namespaces
+ * @api private
  */
 function checkType(type, prefix, modulesNspList) {
     return modulesNspList.find(moduleNsp => type.includes(moduleNsp + prefix));
@@ -104,6 +109,7 @@ function checkType(type, prefix, modulesNspList) {
  * @param actionType
  * @param prefix
  * @return string channelName
+ * @api private
  */
 function getChannelName(actionType, prefix) {
     return actionType.slice(actionType.indexOf(prefix) + prefix.length).toUpperCase();
