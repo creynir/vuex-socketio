@@ -1,5 +1,7 @@
 export default function createSocketIoPlugin(socket, options) {
     const sockets = Array.isArray(socket) ? socket : [socket];
+    const defaultFnPrefix = 'socket_';
+
     options = options || {};
     options.emitPrefix = options.emitPrefix || 'socket_emit_';
     options.onPrefix = options.onPrefix || 'socket_on_';
@@ -61,8 +63,8 @@ export default function createSocketIoPlugin(socket, options) {
                     socket.emit(channelName, action.payload);
                 }
                 const prefix = _options.defaultPrefixes.find(prefix => checkType(action.type, _options.socketNsp + prefix, _options.modulesNspList));
-                if (prefix && prefix.lastIndexOf('socket_') !== -1) {
-                    const defaultFn = prefix.slice(prefix.indexOf('socket_') + 'socket_'.length);
+                if (prefix && prefix.indexOf(defaultFnPrefix) !== -1) {
+                    const defaultFn = prefix.slice(prefix.indexOf(defaultFnPrefix) + defaultFnPrefix.length);
                     typeof socket[defaultFn] === 'function' ? socket[defaultFn]() : null;
                 }
             })
@@ -70,7 +72,7 @@ export default function createSocketIoPlugin(socket, options) {
     }
 }
 
-/**Commit payload to target mutation by channelName,
+/**Commit payload to target mutation and action by channelName,
  * socket namespace, prefix and modulesNspList
  *  @param store
  *  @param channelName
@@ -81,14 +83,12 @@ export default function createSocketIoPlugin(socket, options) {
 function commitToStore(store, channelName, payload, _options) {
     const channelNameLowCase = channelName.toLowerCase();
     _options.storeMutations.map(mutationType => {
-        if (checkType(mutationType, _options.socketNsp + _options.onPrefix + channelNameLowCase, _options.modulesNspList)
-        || mutationType === _options.socketNsp + _options.onPrefix + channelNameLowCase) {
+        if (checkType(mutationType, _options.socketNsp + _options.onPrefix + channelNameLowCase, _options.modulesNspList)) {
             store.commit(mutationType, payload);
         }
     });
     _options.storeActions.map(actionType => {
-        if (checkType(actionType, _options.socketNsp + _options.onPrefix + channelNameLowCase, _options.modulesNspList)
-        || actionType === _options.socketNsp + _options.onPrefix + channelNameLowCase) {
+        if (checkType(actionType, _options.socketNsp + _options.onPrefix + channelNameLowCase, _options.modulesNspList)) {
             store.dispatch(actionType, payload);
         }
     });
@@ -102,10 +102,14 @@ function commitToStore(store, channelName, payload, _options) {
  * @api private
  */
 function checkType(type, prefix, modulesNspList) {
-    return modulesNspList.find(moduleNsp => type.includes(moduleNsp + prefix));
+    const moduleNamespace = modulesNspList.find(moduleNsp => type.includes(moduleNsp + prefix));
+    if(moduleNamespace){
+        return type.slice(type.indexOf(moduleNamespace)+moduleNamespace.length).startsWith(prefix);
+    }
+    return type.startsWith(prefix);
 }
 
-/**Return socket channel name from action type
+/**Return socket channel name from action type in upper case
  * @param actionType
  * @param prefix
  * @return string channelName
