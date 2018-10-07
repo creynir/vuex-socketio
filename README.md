@@ -92,7 +92,7 @@ where `socket_` is a mandatory prefix and `reconnect` is a function name
 ``` js
 const socketPlugin = createSocketIoPlugin(socket, {defaultPrefixes: ['socket_reconnect']);
 ```
-#### Namespaces for store modules and for sockets are supported.
+#### Namespaces for store modules and for socket instances are supported.
 
 ``` js
 import Vue from 'vue'
@@ -127,7 +127,7 @@ export default new Vuex.Store({
 })
 ```
 
-#### Socket with namespace:
+#### Socket instance with namespace:
 
 ``` js
 import Vue from 'vue'
