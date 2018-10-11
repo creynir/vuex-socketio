@@ -101,7 +101,7 @@ const socketPlugin = createSocketIoPlugin(socket, {channelFormat: 'CamelCase'});
 ```
 The **default** value is `UppSnakeCase`
 
-#### Namespaces for store modules and for sockets are supported.
+#### Namespaces for store modules and for socket instances are supported.
 
 ``` js
 import Vue from 'vue'
@@ -136,7 +136,7 @@ export default new Vuex.Store({
 })
 ```
 
-#### Socket with namespace:
+#### Socket instance with namespace:
 
 ``` js
 import Vue from 'vue'
