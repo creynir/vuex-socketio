@@ -28,7 +28,7 @@ const socketNsp = socketio('http://socketserver.com:3001/namespace');
 const socketPlugin = createSocketIoPlugin([socket, socketNsp]);
 ```
 
-In vuex:
+In store:
 ``` js
 Vue.use(Vuex);
 
@@ -45,26 +45,26 @@ You may define prefix for `socket.on` with options object:
 ``` js
 const socketPlugin = createSocketIoPlugin(socket, {onPrefix: 'someOnPrefix'});
 ```
-The **default** value is `socket_on_`
+The **default** value is `socketOn`
 
 ``` js
 mutations: {
-        socket_on_connect: (state,  status ) => {
+        socketOnConnect: (state,  status ) => {
             state.connect = true;
         },
-        socket_on_message: (state,  message) => {
+        socketOnMessage: (state,  message) => {
             state.message = message;
         },
         ...
     },
 actions: {
-        socket_on_other_message: (context, message) => {
+        socketOnOtherMessage: (context, message) => {
         ...some code here
         },
         ...
     }
 ```
-Where `socket_on_` is a prefix for listener and `message` is a desired channel name
+Where `socketOn` is a prefix for listener and `message` is a desired channel name
 
 #### Set up emiters
 **Emiters can be used only with actions**
@@ -73,25 +73,34 @@ Define `socket.emit` prefix:
 ``` js
 const socketPlugin = createSocketIoPlugin(socket, {emitPrefix: 'someEmitPrefix'});
 ```
-Or use the **default** value: `socket_emit_`
+Or use the **default** value: `socketEmit`
 
 ``` js
 actions: {
-        socket_emit_message: (context, message) => {},
+        socketEmitMessage: (context, message) => {},
         ...
      }
 ```
-Where `socket_emit_` is a prefix for emit messages and `message` is a desired channel name
+Where `socketEmit` is a prefix for emit messages and `message` is a desired channel name
 
-**For opening and closing the connection use: `socket_connect` && `socket_disconnect` actions**
+**For opening and closing the connection use: `socketConnect` && `socketDisconnect` actions**
 
-You can also add some prefixes for default functions, e.g.: `socket_reconnect`,
+You can also add some prefixes for default functions, e.g.: `socketReconnect`,
 
-where `socket_` is a mandatory prefix and `reconnect` is a function name
-
+where `socket` is a mandatory prefix and `reconnect` is a function name
 ``` js
-const socketPlugin = createSocketIoPlugin(socket, {defaultPrefixes: ['socket_reconnect']);
+const socketPlugin = createSocketIoPlugin(socket, {defaultPrefixes: ['socketReconnect']);
 ```
+
+#### Set up channel name formatter
+You can chose between 4 different cases for channel formatting:<br />
+`CamelCase: channelName`, `PascalCase: ChannelName`, `UppSnakeCase: CHANNEL_NAME`, `LowSnakeCase: channel_name`<br />
+Use channelFormat property to set formatter:
+``` js
+const socketPlugin = createSocketIoPlugin(socket, {channelFormat: 'CamelCase'});
+```
+The **default** value is `UppSnakeCase`
+
 #### Namespaces for store modules and for sockets are supported.
 
 ``` js
@@ -106,24 +115,24 @@ export default new Vuex.Store({
         message: null
     },
     mutations:{
-        socket_on_connect: (state,  status ) => {
+        socketOnConnect: (state,  status ) => {
             state.connect = true;
         },
-        socket_on_disconnect: (state,  status ) => {
+        socketOnDisconnect: (state,  status ) => {
             state.connect = false;
         },
-        socket_on_message: (state,  message) => {
+        socketOnMessage: (state,  message) => {
             state.message = message;
         }
     },
     actions: {
-        socket_connect: () => {},
-        socket_emit_message: () => {},
-        socket_on_other_message: (context, message) => {
+        socketConnect: () => {},
+        socketEmitMessage: () => {},
+        socketOnOtherMessage: (context, message) => {
         ...some code here
         },
     },
-    plugins: [websocketPlugin]
+    plugins: [socketPlugin]
 })
 ```
 
@@ -141,30 +150,46 @@ export default new Vuex.Store({
         message: null
     },
     mutations:{
-        namespace_socket_on_connect: (state,  status ) => {
+        namespaceSocketOnConnect: (state,  status ) => {
             state.connect = true;
         },
-        namespace_socket_on_disconnect: (state,  status ) => {
+        namespaceSocketOnDisconnect: (state,  status ) => {
             state.connect = false;
         },
-        namespace_socket_on_message: (state,  message) => {
+        namespaceSocketOnMessage: (state,  message) => {
             state.message = message;
         }
     },
     actions: {
-        namespace_socket_connect: () => {},
-        namespace_socket_emit_message: () => {},
-        namespace_socket_on_other_message: (context, message) => {
+        namespaceSocketConnect: () => {},
+        namespaceSocketEmitMessage: () => {},
+        namespaceSocketOnOtherMessage: (context, message) => {
         ...some code here
         },
     },
-    plugins: [websocketPlugin]
+    plugins: [socketPlugin]
 })
 ```
 ### Notes
-**Only one emitPrefix or onPrefix can be used at the same time.**<br />
-**Channel name on server side should be declared in upper case.**<br />
-**Channel prefixes in actions and mutations should be written in lower case.**
-
+**Plugin supports action and mutation names in snake case also.**<br />
+Define prefixes:
+``` js
+const socketPlugin = createSocketIoPlugin(socket, {emitPrefix: 'socket_emit_', onPrefix: 'socket_on_'});
+```
+In store:
+``` js
+mutations: {
+        socket_on_message: (state,  message) => {
+            state.message = message;
+        },
+        ...
+    },
+actions: {
+        namespace_socket_on_other_message: (context, message) => {
+        ...some code here
+        },
+        ...
+    }
+```
 ### Example
 [demo](./demo)

@@ -1,19 +1,23 @@
 export default function createSocketIoPlugin(socket, options) {
     const sockets = Array.isArray(socket) ? socket : [socket];
-    const defaultFnPrefix = 'socket_';
+    const defaultFnPrefix = 'socket';
 
     options = options || {};
-    options.emitPrefix = options.emitPrefix || 'socket_emit_';
-    options.onPrefix = options.onPrefix || 'socket_on_';
+    options.channelFormat = options.channelFormat || 'UppSnakeCase';
+    options.firstLetLowCase = options.firstLetLowCase || false;
+    options.emitPrefix = options.emitPrefix || 'socketEmit';
+    options.onPrefix = options.onPrefix || 'socketOn';
     options.defaultPrefixes = options.defaultPrefixes || [];
-    options.defaultPrefixes = options.defaultPrefixes.concat(['socket_connect', 'socket_disconnect']);
+    options.defaultPrefixes = options.defaultPrefixes.concat(['socketConnect', 'socketDisconnect']).map(prefix => normalizeString(prefix));
+
+    const channelFormatter = formatters[options.channelFormat];
 
     return store => {
         sockets.forEach(socket => {
 
             let _options = Object.assign({}, options);
-            _options.socketNsp = socket.nsp === '/' ? '' : socket.nsp.slice(1) + '_';
-            _options.modulesNspList = Object.keys(store._modulesNamespaceMap);
+            _options.socketNsp = socket.nsp === '/' ? '' : normalizeString(socket.nsp.slice(1));
+            _options.modulesNspList = Object.keys(store._modulesNamespaceMap).map(nsp => normalizeString(nsp));
             _options.storeMutations = Object.keys(store._mutations);
             _options.storeActions = Object.keys(store._actions);
 
@@ -60,7 +64,7 @@ export default function createSocketIoPlugin(socket, options) {
             store.subscribeAction(action => {
                 if (checkType(action.type, _options.socketNsp + _options.emitPrefix, _options.modulesNspList)) {
                     const channelName = getChannelName(action.type, _options.emitPrefix);
-                    socket.emit(channelName, action.payload);
+                    socket.emit(channelFormatter(channelName), action.payload);
                 }
                 const prefix = _options.defaultPrefixes.find(prefix => checkType(action.type, _options.socketNsp + prefix, _options.modulesNspList));
                 if (prefix && prefix.indexOf(defaultFnPrefix) !== -1) {
@@ -81,14 +85,14 @@ export default function createSocketIoPlugin(socket, options) {
  *  @api private
  */
 function commitToStore(store, channelName, payload, _options) {
-    const channelNameLowCase = channelName.toLowerCase();
+    const normalizedChannelName = normalizeString(channelName);
     _options.storeMutations.map(mutationType => {
-        if (checkType(mutationType, _options.socketNsp + _options.onPrefix + channelNameLowCase, _options.modulesNspList)) {
+        if (checkType(mutationType, _options.socketNsp + _options.onPrefix + normalizedChannelName, _options.modulesNspList)) {
             store.commit(mutationType, payload);
         }
     });
     _options.storeActions.map(actionType => {
-        if (checkType(actionType, _options.socketNsp + _options.onPrefix + channelNameLowCase, _options.modulesNspList)) {
+        if (checkType(actionType, _options.socketNsp + _options.onPrefix + normalizedChannelName, _options.modulesNspList)) {
             store.dispatch(actionType, payload);
         }
     });
@@ -102,19 +106,82 @@ function commitToStore(store, channelName, payload, _options) {
  * @api private
  */
 function checkType(type, prefix, modulesNspList) {
-    const moduleNamespace = modulesNspList.find(moduleNsp => type.includes(moduleNsp + prefix));
-    if(moduleNamespace){
-        return type.slice(type.indexOf(moduleNamespace)+moduleNamespace.length).startsWith(prefix);
+    const normalizedType = normalizeString(type);
+    const normalizedPrefix = normalizeString(prefix);
+    const moduleNamespace = modulesNspList.find(moduleNsp => normalizedType.includes(moduleNsp + normalizedPrefix));
+    if (moduleNamespace) {
+        return normalizedType.slice(normalizedType.indexOf(moduleNamespace) + moduleNamespace.length).startsWith(normalizedPrefix);
     }
-    return type.startsWith(prefix);
+    return normalizedType.startsWith(normalizedPrefix);
 }
 
-/**Return socket channel name from action type in upper case
+/**Return socket channel name sliced from action type
  * @param actionType
  * @param prefix
  * @return string channelName
  * @api private
  */
 function getChannelName(actionType, prefix) {
-    return actionType.slice(actionType.indexOf(prefix) + prefix.length).toUpperCase();
+    const pActionType = toPascalCase(actionType);
+    const pPrefix = toPascalCase(prefix);
+    return pActionType.slice(pActionType.indexOf(pPrefix) + pPrefix.length);
+}
+
+/**Return normalized low case string without any non-word characters
+ * @param string to normalize
+ * @return string
+ * @api private
+ */
+function normalizeString(string) {
+    return string.replace(/[\W_]/g, '').toLowerCase();
+}
+
+/**Map for formatter functions
+ * @api private
+ */
+const formatters = {
+    'CamelCase': (s => toCamelCase(s)),
+    'PascalCase': (s => toPascalCase(s)),
+    'UppSnakeCase': (s => toSnakeCase(s).toUpperCase()),
+    'LowSnakeCase': (s => toSnakeCase(s).toLowerCase())
+};
+
+/**Return string in camelCase
+ * @param string
+ * @return string
+ * @api private
+ */
+function toCamelCase(string) {
+    const pStr = toPascalCase(string);
+    return pStr.charAt(0).toLowerCase() + pStr.slice(1);
+}
+
+/**Return string in PascalCase
+ * @param string
+ * @return string
+ * @api private
+ */
+function toPascalCase(string) {
+    return toSpaceCase(string)
+    .replace(/\w\S*/g, (s => s.charAt(0).toUpperCase() + s.substr(1).toLowerCase()))
+    .replace(/\s+/g, '');
+}
+
+/**Return string in snake_case
+ * @param string
+ * @return string
+ * @api private
+ */
+function toSnakeCase(string) {
+    return toSpaceCase(string).replace(/\s+/g, '_');
+}
+
+/**Return string in space case
+ * @param string
+ * @return string
+ * @api private
+ */
+function toSpaceCase(string) {
+    return string.replace(/[\W_]/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2');
 }

@@ -7,21 +7,21 @@
         <b-button-group vertical>
           <b-button
             v-bind:class="{ 'btn-success': connected, 'btn-outline-success' : !connected }"
-            @click="socket_connect()">Socket Connect
+            @click="socketConnect()">Socket Connect
           </b-button>
           <b-button
             :disabled="nspConnected"
             v-bind:class="{ 'btn-danger': connected, 'btn-outline-success' : !connected }"
-            @click="socket_disconnect()">Socket Disconnect
+            @click="socketDisconnect()">Socket Disconnect
           </b-button>
           <b-button
             v-bind:class="{ 'btn-success': nspConnected, 'btn-outline-success' : !nspConnected }"
-            @click="namespace_socket_connect()">NSP
+            @click="namespaceSocketConnect()">NSP
             Socket Connect
           </b-button>
           <b-button
             v-bind:class="{ 'btn-danger': nspConnected, 'btn-outline-success' : !nspConnected }"
-            @click="namespace_socket_disconnect()">NSP Socket Connect
+            @click="namespaceSocketDisconnect()">NSP Socket Connect
           </b-button>
         </b-button-group>
       </div>
@@ -85,17 +85,17 @@
       ...mapState('channelModule', ['channelMessages', 'nspChannelMessages'])
     },
     methods: {
-      ...mapActions('socketModule', ['socket_emit_send_message', 'namespace_socket_emit_send_message',
-        'socket_disconnect', 'socket_connect', 'namespace_socket_connect', 'namespace_socket_disconnect']),
+      ...mapActions('socketModule', ['socketEmitSendMessage', 'namespaceSocketEmitSendMessage',
+        'socketDisconnect', 'socketConnect', 'namespaceSocketConnect', 'namespaceSocketDisconnect']),
       sendMessage() {
         if (this.sendMessageInput !== '') {
-          this.socket_emit_send_message(this.sendMessageInput);
+          this.socketEmitSendMessage(this.sendMessageInput);
           this.sendMessageInput = '';
         }
       },
       nspSendMessage() {
         if (this.nspSendMessageInput !== '') {
-          this.namespace_socket_emit_send_message(this.nspSendMessageInput);
+          this.namespaceSocketEmitSendMessage(this.nspSendMessageInput);
           this.nspSendMessageInput = '';
         }
       }

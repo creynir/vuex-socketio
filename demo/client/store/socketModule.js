@@ -6,19 +6,19 @@ const socketModule = {
     socketMessages: []
   },
   mutations: {
-    socket_on_connect(state) {
+    socketOnConnect(state) {
       state.socketMessages.push('socket connected');
       state.connected = true;
     },
-    socket_on_disconnect(state) {
+    socketOnDisconnect(state) {
       state.socketMessages.push('socket disconnected');
       state.connected = false;
     },
-    namespace_socket_on_connect(state) {
+    namespaceSocketOnConnect(state) {
       state.socketMessages.push('namespace/socket connected');
       state.nspConnected = true;
     },
-    namespace_socket_on_disconnect(state) {
+    namespaceSocketOnDisconnect(state) {
       state.socketMessages.push('namespace/socket disconnected');
       state.nspConnected = false;
     },
@@ -28,12 +28,12 @@ const socketModule = {
 
   },
   actions: {
-    socket_connect: () => {},
-    socket_disconnect: () => {},
-    socket_emit_send_message: (context, message) => {},
-    namespace_socket_connect: () => {},
-    namespace_socket_disconnect: () => {},
-    namespace_socket_emit_send_message: (context, message) => {}
+    socketConnect: () => {},
+    socketDisconnect: () => {},
+    socketEmitSendMessage: (context, message) => {},
+    namespaceSocketConnect: () => {},
+    namespaceSocketDisconnect: () => {},
+    namespaceSocketEmitSendMessage: (context, message) => {}
   }
 };
 
