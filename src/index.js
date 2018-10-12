@@ -1,3 +1,5 @@
+import {formatters, normalizeString} from './utils.js';
+
 export default function createSocketIoPlugin(socket, options) {
     const sockets = Array.isArray(socket) ? socket : [socket];
     const defaultFnPrefix = 'socket';
@@ -122,66 +124,7 @@ function checkType(type, prefix, modulesNspList) {
  * @api private
  */
 function getChannelName(actionType, prefix) {
-    const pActionType = toPascalCase(actionType);
-    const pPrefix = toPascalCase(prefix);
+    const pActionType = formatters.PascalCase(actionType);
+    const pPrefix = formatters.PascalCase(prefix);
     return pActionType.slice(pActionType.indexOf(pPrefix) + pPrefix.length);
-}
-
-/**Return normalized low case string without any non-word characters
- * @param string to normalize
- * @return string
- * @api private
- */
-function normalizeString(string) {
-    return string.replace(/[\W_]/g, '').toLowerCase();
-}
-
-/**Map for formatter functions
- * @api private
- */
-const formatters = {
-    'CamelCase': (s => toCamelCase(s)),
-    'PascalCase': (s => toPascalCase(s)),
-    'UppSnakeCase': (s => toSnakeCase(s).toUpperCase()),
-    'LowSnakeCase': (s => toSnakeCase(s).toLowerCase())
-};
-
-/**Return string in camelCase
- * @param string
- * @return string
- * @api private
- */
-function toCamelCase(string) {
-    const pStr = toPascalCase(string);
-    return pStr.charAt(0).toLowerCase() + pStr.slice(1);
-}
-
-/**Return string in PascalCase
- * @param string
- * @return string
- * @api private
- */
-function toPascalCase(string) {
-    return toSpaceCase(string)
-    .replace(/\w\S*/g, (s => s.charAt(0).toUpperCase() + s.substr(1).toLowerCase()))
-    .replace(/\s+/g, '');
-}
-
-/**Return string in snake_case
- * @param string
- * @return string
- * @api private
- */
-function toSnakeCase(string) {
-    return toSpaceCase(string).replace(/\s+/g, '_');
-}
-
-/**Return string in space case
- * @param string
- * @return string
- * @api private
- */
-function toSpaceCase(string) {
-    return string.replace(/[\W_]/g, ' ')
-    .replace(/([a-z])([A-Z])/g, '$1 $2');
 }
