@@ -1,25 +1,19 @@
-import {formatters, normalizeString} from './utils.js';
+import * as Formatter from './channelFormatter';
 
-export default function createSocketIoPlugin(socket, options) {
+export default function (socket, {channelFormat = 'upperSnakeCase', emitPrefix = 'socketEmit', onPrefix = 'socketOn', defaultPrefixes = []} = {}) {
     const sockets = Array.isArray(socket) ? socket : [socket];
     const defaultFnPrefix = 'socket';
+    const channelFormatter = Formatter[channelFormat];
+    defaultPrefixes = defaultPrefixes.concat(['socketConnect', 'socketDisconnect']).map(prefix => Formatter.normalizeString(prefix));
 
-    options = options || {};
-    options.channelFormat = options.channelFormat || 'UppSnakeCase';
-    options.firstLetLowCase = options.firstLetLowCase || false;
-    options.emitPrefix = options.emitPrefix || 'socketEmit';
-    options.onPrefix = options.onPrefix || 'socketOn';
-    options.defaultPrefixes = options.defaultPrefixes || [];
-    options.defaultPrefixes = options.defaultPrefixes.concat(['socketConnect', 'socketDisconnect']).map(prefix => normalizeString(prefix));
-
-    const channelFormatter = formatters[options.channelFormat];
+    const options = {channelFormat, emitPrefix, onPrefix, defaultPrefixes}
 
     return store => {
         sockets.forEach(socket => {
 
             let _options = Object.assign({}, options);
-            _options.socketNsp = socket.nsp === '/' ? '' : normalizeString(socket.nsp.slice(1));
-            _options.modulesNspList = Object.keys(store._modulesNamespaceMap).map(nsp => normalizeString(nsp));
+            _options.socketNsp = (socket.nsp === undefined || socket.nsp === '/') ? '' : Formatter.normalizeString(socket.nsp.slice(1));
+            _options.modulesNspList = Object.keys(store._modulesNamespaceMap).map(nsp => Formatter.normalizeString(nsp));
             _options.storeMutations = Object.keys(store._mutations);
             _options.storeActions = Object.keys(store._actions);
 
@@ -87,7 +81,7 @@ export default function createSocketIoPlugin(socket, options) {
  *  @api private
  */
 function commitToStore(store, channelName, payload, _options) {
-    const normalizedChannelName = normalizeString(channelName);
+    const normalizedChannelName = Formatter.normalizeString(channelName);
     _options.storeMutations.map(mutationType => {
         if (checkType(mutationType, _options.socketNsp + _options.onPrefix + normalizedChannelName, _options.modulesNspList)) {
             store.commit(mutationType, payload);
@@ -108,8 +102,8 @@ function commitToStore(store, channelName, payload, _options) {
  * @api private
  */
 function checkType(type, prefix, modulesNspList) {
-    const normalizedType = normalizeString(type);
-    const normalizedPrefix = normalizeString(prefix);
+    const normalizedType = Formatter.normalizeString(type);
+    const normalizedPrefix = Formatter.normalizeString(prefix);
     const moduleNamespace = modulesNspList.find(moduleNsp => normalizedType.includes(moduleNsp + normalizedPrefix));
     if (moduleNamespace) {
         return normalizedType.slice(normalizedType.indexOf(moduleNamespace) + moduleNamespace.length).startsWith(normalizedPrefix);
@@ -124,7 +118,7 @@ function checkType(type, prefix, modulesNspList) {
  * @api private
  */
 function getChannelName(actionType, prefix) {
-    const pActionType = formatters.PascalCase(actionType);
-    const pPrefix = formatters.PascalCase(prefix);
+    const pActionType = Formatter.pascalCase(actionType);
+    const pPrefix = Formatter.pascalCase(prefix);
     return pActionType.slice(pActionType.indexOf(pPrefix) + pPrefix.length);
 }
