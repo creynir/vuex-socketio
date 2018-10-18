@@ -87,9 +87,11 @@
     methods: {
       ...mapActions('socketModule', ['socketEmitSendMessage', 'namespaceSocketEmitSendMessage',
         'socketDisconnect', 'socketConnect', 'namespaceSocketConnect', 'namespaceSocketDisconnect']),
+      ...mapActions('devicesModule', ['socketEmit_joinSession']),
       sendMessage() {
         if (this.sendMessageInput !== '') {
-          this.socketEmitSendMessage(this.sendMessageInput);
+          // this.socketEmitSendMessage(this.sendMessageInput);
+          this.socketEmit_joinSession(this.sendMessageInput);
           this.sendMessageInput = '';
         }
       },

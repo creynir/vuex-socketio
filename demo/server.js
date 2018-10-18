@@ -13,6 +13,12 @@ io.on('connection', function(socket) {
     console.log('SEND_MESSAGE', data);
     io.emit('MESSAGE', data);
   });
+
+  socket.on('joinSession', function(data) {
+    console.log('joinSession', data);
+    io.emit('sessionJoined', data + ' (ecoh from server)');
+  });
+
 });
 
 let nsp = io.of('/namespace');
