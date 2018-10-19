@@ -1,0 +1,43 @@
+{
+  "extends": [
+    "standard",
+    "plugin:vue/recommended"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module"
+  },
+  "env": {
+    "browser": true,
+    "node": true,
+    "jasmine": true,
+    "es6": true
+  },
+  "rules": {
+    "indent": [
+      "error",
+      4,
+      {
+        "SwitchCase": 1
+      }
+    ],
+    "no-self-assign": "off",
+    "semi": [
+      "error",
+      "always"
+    ],
+    "no-console": [
+      "error"
+    ],
+    "id-blacklist": [
+      "error",
+      "$log.log",
+      "$log.info",
+      "$log.warn",
+      "$log.debug"
+    ],
+    "no-unused-expressions": ["error", {
+      "allowTernary": true
+    }]
+  }
+}

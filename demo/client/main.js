@@ -1,14 +1,15 @@
-import Vue from 'vue'
-import App from './App.vue'
-import store from './store/index.js'
-import 'bootstrap/dist/css/bootstrap.css'
-import 'bootstrap-vue/dist/bootstrap-vue.css'
-import BootstrapVue from 'bootstrap-vue'
+import Vue from 'vue';
+import App from './App.vue';
+import store from './store/index.js';
+import 'bootstrap/dist/css/bootstrap.css';
+import 'bootstrap-vue/dist/bootstrap-vue.css';
+import BootstrapVue from 'bootstrap-vue';
 
 Vue.use(BootstrapVue);
 
+// eslint-disable-next-line no-new
 new Vue({
-  el: '#app',
-  store,
-  render: h => h(App)
+    el: '#app',
+    store,
+    render: h => h(App)
 });
