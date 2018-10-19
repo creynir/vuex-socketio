@@ -1,6 +1,6 @@
-import {formatters, normalizeString} from './utils.js';
+import { formatters, normalizeString } from './utils.js';
 
-export default function createSocketIoPlugin(socket, options) {
+export default function createSocketIoPlugin (socket, options) {
     const sockets = Array.isArray(socket) ? socket : [socket];
     const defaultFnPrefix = 'socket';
 
@@ -16,14 +16,13 @@ export default function createSocketIoPlugin(socket, options) {
 
     return store => {
         sockets.forEach(socket => {
-
             let _options = Object.assign({}, options);
             _options.socketNsp = socket.nsp === '/' ? '' : normalizeString(socket.nsp.slice(1));
             _options.modulesNspList = Object.keys(store._modulesNamespaceMap).map(nsp => normalizeString(nsp));
             _options.storeMutations = Object.keys(store._mutations);
             _options.storeActions = Object.keys(store._actions);
 
-            /**Fire on all socket events,
+            /** Fire on all socket events,
              * trigger commitToStoreFunction
              *  @param packet with channel name and payload
              *  @api private
@@ -36,7 +35,7 @@ export default function createSocketIoPlugin(socket, options) {
                 commitToStore(store, channelName, payload, _options);
             };
 
-            /**Fire on all default events,
+            /** Fire on all default events,
              * trigger commitToStoreFunction
              * @api private
              */
@@ -55,10 +54,10 @@ export default function createSocketIoPlugin(socket, options) {
                 'ping',
                 'pong'
             ].forEach(channelName =>
-            socket.on(channelName, (payload) =>
-            commitToStore(store, channelName, payload, _options)));
+                socket.on(channelName, (payload) =>
+                    commitToStore(store, channelName, payload, _options)));
 
-            /**Subscribe the socket.emit and default socket fn's to all related actions
+            /** Subscribe the socket.emit and default socket fn's to all related actions
              * by prefix, moduleNspList and socket namespace
              *  @param action
              *  @api private
@@ -71,14 +70,16 @@ export default function createSocketIoPlugin(socket, options) {
                 const prefix = _options.defaultPrefixes.find(prefix => checkType(action.type, _options.socketNsp + prefix, _options.modulesNspList));
                 if (prefix && prefix.indexOf(defaultFnPrefix) !== -1) {
                     const defaultFn = prefix.slice(prefix.indexOf(defaultFnPrefix) + defaultFnPrefix.length);
-                    typeof socket[defaultFn] === 'function' ? socket[defaultFn]() : null;
+                    if (typeof socket[defaultFn] === 'function') {
+                        socket[defaultFn]();
+                    }
                 }
-            })
+            });
         });
-    }
+    };
 }
 
-/**Commit payload to target mutation and action by channelName,
+/** Commit payload to target mutation and action by channelName,
  * socket namespace, prefix and modulesNspList
  *  @param store
  *  @param channelName
@@ -86,7 +87,7 @@ export default function createSocketIoPlugin(socket, options) {
  *  @param _options with storeMutations, onPrefix and modulesNspList
  *  @api private
  */
-function commitToStore(store, channelName, payload, _options) {
+function commitToStore (store, channelName, payload, _options) {
     const normalizedChannelName = normalizeString(channelName);
     _options.storeMutations.map(mutationType => {
         if (checkType(mutationType, _options.socketNsp + _options.onPrefix + normalizedChannelName, _options.modulesNspList)) {
@@ -100,14 +101,14 @@ function commitToStore(store, channelName, payload, _options) {
     });
 }
 
-/**Check if the function type (name)
+/** Check if the function type (name)
  * includes the module namespace with prefix
  * @param type of function
  * @param prefix
  * @param modulesNspList with module namespaces
  * @api private
  */
-function checkType(type, prefix, modulesNspList) {
+function checkType (type, prefix, modulesNspList) {
     const normalizedType = normalizeString(type);
     const normalizedPrefix = normalizeString(prefix);
     const moduleNamespace = modulesNspList.find(moduleNsp => normalizedType.includes(moduleNsp + normalizedPrefix));
@@ -117,13 +118,13 @@ function checkType(type, prefix, modulesNspList) {
     return normalizedType.startsWith(normalizedPrefix);
 }
 
-/**Return socket channel name sliced from action type
+/** Return socket channel name sliced from action type
  * @param actionType
  * @param prefix
  * @return string channelName
  * @api private
  */
-function getChannelName(actionType, prefix) {
+function getChannelName (actionType, prefix) {
     const pActionType = formatters.PascalCase(actionType);
     const pPrefix = formatters.PascalCase(prefix);
     return pActionType.slice(pActionType.indexOf(pPrefix) + pPrefix.length);

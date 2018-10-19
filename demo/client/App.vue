@@ -6,21 +6,21 @@
       <div class="btn-group">
         <b-button-group vertical>
           <b-button
-            v-bind:class="{ 'btn-success': connected, 'btn-outline-success' : !connected }"
+            :class="{ 'btn-success': connected, 'btn-outline-success' : !connected }"
             @click="socketConnect()">Socket Connect
           </b-button>
           <b-button
             :disabled="nspConnected"
-            v-bind:class="{ 'btn-danger': connected, 'btn-outline-success' : !connected }"
+            :class="{ 'btn-danger': connected, 'btn-outline-success' : !connected }"
             @click="socketDisconnect()">Socket Disconnect
           </b-button>
           <b-button
-            v-bind:class="{ 'btn-success': nspConnected, 'btn-outline-success' : !nspConnected }"
+            :class="{ 'btn-success': nspConnected, 'btn-outline-success' : !nspConnected }"
             @click="namespaceSocketConnect()">NSP
             Socket Connect
           </b-button>
           <b-button
-            v-bind:class="{ 'btn-danger': nspConnected, 'btn-outline-success' : !nspConnected }"
+            :class="{ 'btn-danger': nspConnected, 'btn-outline-success' : !nspConnected }"
             @click="namespaceSocketDisconnect()">NSP Socket Connect
           </b-button>
         </b-button-group>
@@ -28,30 +28,44 @@
 
       <div class="send-box">
         <div class="input-form">
-          <b-button @click="sendMessage()" variant="outline-success">Submit</b-button>
-          <b-form-input v-model="sendMessageInput"
-                        type="text"
-                        placeholder="Enter message"></b-form-input>
+          <b-button
+            variant="outline-success"
+            @click="sendMessage()">Submit</b-button>
+          <b-form-input
+            v-model="sendMessageInput"
+            type="text"
+            placeholder="Enter message"/>
         </div>
-        <div v-if="channelMessages.length > 0" class="message-box">
+        <div
+          v-if="channelMessages.length > 0"
+          class="message-box">
           <div class="response-box">Socket response</div>
           <b-list-group>
-            <b-list-group-item v-for="message in channelMessages">{{message}}</b-list-group-item>
+            <b-list-group-item
+              v-for="message in channelMessages"
+              :key="message">{{ message }}</b-list-group-item>
           </b-list-group>
         </div>
       </div>
 
       <div class="send-box">
         <div class="input-form">
-          <b-button @click="nspSendMessage()" variant="outline-success">Submit Nsp</b-button>
-          <b-form-input v-model="nspSendMessageInput"
-                        type="text"
-                        placeholder="Enter nsp message"></b-form-input>
+          <b-button
+            variant="outline-success"
+            @click="nspSendMessage()">Submit Nsp</b-button>
+          <b-form-input
+            v-model="nspSendMessageInput"
+            type="text"
+            placeholder="Enter nsp message"/>
         </div>
-        <div v-if="nspChannelMessages.length > 0" class="message-box">
+        <div
+          v-if="nspChannelMessages.length > 0"
+          class="message-box">
           <div class="response-box">Namespace socket response</div>
           <b-list-group>
-            <b-list-group-item v-for="message in nspChannelMessages">{{message}}</b-list-group-item>
+            <b-list-group-item
+              v-for="message in nspChannelMessages"
+              :key="message">{{ message }}</b-list-group-item>
           </b-list-group>
         </div>
       </div>
@@ -61,7 +75,9 @@
       <div class="logs-header">Event Log</div>
       <div class="logs-box">
         <b-list-group>
-          <b-list-group-item v-for="message in socketMessages">{{message}}</b-list-group-item>
+          <b-list-group-item
+            v-for="message in socketMessages"
+            :key="message">{{ message }}</b-list-group-item>
         </b-list-group>
       </div>
     </div>
@@ -70,37 +86,37 @@
 </template>
 
 <script>
-  import {mapState, mapActions} from 'vuex';
+import { mapState, mapActions } from 'vuex';
 
-  export default {
-    name: 'app',
-    data() {
-      return {
-        sendMessageInput: '',
-        nspSendMessageInput: '',
-      }
+export default {
+    name: 'App',
+    data () {
+        return {
+            sendMessageInput: '',
+            nspSendMessageInput: ''
+        };
     },
     computed: {
-      ...mapState('socketModule', ['socketMessages', 'connected', 'nspConnected']),
-      ...mapState('channelModule', ['channelMessages', 'nspChannelMessages'])
+        ...mapState('socketModule', ['socketMessages', 'connected', 'nspConnected']),
+        ...mapState('channelModule', ['channelMessages', 'nspChannelMessages'])
     },
     methods: {
-      ...mapActions('socketModule', ['socketEmitSendMessage', 'namespaceSocketEmitSendMessage',
-        'socketDisconnect', 'socketConnect', 'namespaceSocketConnect', 'namespaceSocketDisconnect']),
-      sendMessage() {
-        if (this.sendMessageInput !== '') {
-          this.socketEmitSendMessage(this.sendMessageInput);
-          this.sendMessageInput = '';
+        ...mapActions('socketModule', ['socketEmitSendMessage', 'namespaceSocketEmitSendMessage',
+            'socketDisconnect', 'socketConnect', 'namespaceSocketConnect', 'namespaceSocketDisconnect']),
+        sendMessage () {
+            if (this.sendMessageInput !== '') {
+                this.socketEmitSendMessage(this.sendMessageInput);
+                this.sendMessageInput = '';
+            }
+        },
+        nspSendMessage () {
+            if (this.nspSendMessageInput !== '') {
+                this.namespaceSocketEmitSendMessage(this.nspSendMessageInput);
+                this.nspSendMessageInput = '';
+            }
         }
-      },
-      nspSendMessage() {
-        if (this.nspSendMessageInput !== '') {
-          this.namespaceSocketEmitSendMessage(this.nspSendMessageInput);
-          this.nspSendMessageInput = '';
-        }
-      }
     }
-  }
+};
 </script>
 
 <style scoped>

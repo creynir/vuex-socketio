@@ -8,7 +8,7 @@ module.exports = {
         library: ['VuexSocketio'],
         libraryTarget: 'umd'
     },
-    devtool: "source-map",
+    devtool: 'source-map',
     plugins: [
         new webpack.optimize.UglifyJsPlugin({
             compress: {
@@ -25,7 +25,15 @@ module.exports = {
                 query: {
                     presets: ['es2015']
                 }
+            },
+            {
+                test: /\.js$/,
+                include: [
+                    path.resolve(__dirname, './src')
+                ],
+                loader: 'eslint',
+                exclude: /node_modules/
             }
         ]
     }
-}
+};
