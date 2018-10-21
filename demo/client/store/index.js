@@ -15,8 +15,6 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   modules: {
-    socketModule,
-    channelModule,
     devicesModule
   },
   plugins: [socketIoPlugin]

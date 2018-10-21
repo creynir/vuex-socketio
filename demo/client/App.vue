@@ -6,22 +6,7 @@
       <div class="btn-group">
         <b-button-group vertical>
           <b-button
-            v-bind:class="{ 'btn-success': connected, 'btn-outline-success' : !connected }"
             @click="socketConnect()">Socket Connect
-          </b-button>
-          <b-button
-            :disabled="nspConnected"
-            v-bind:class="{ 'btn-danger': connected, 'btn-outline-success' : !connected }"
-            @click="socketDisconnect()">Socket Disconnect
-          </b-button>
-          <b-button
-            v-bind:class="{ 'btn-success': nspConnected, 'btn-outline-success' : !nspConnected }"
-            @click="namespaceSocketConnect()">NSP
-            Socket Connect
-          </b-button>
-          <b-button
-            v-bind:class="{ 'btn-danger': nspConnected, 'btn-outline-success' : !nspConnected }"
-            @click="namespaceSocketDisconnect()">NSP Socket Connect
           </b-button>
         </b-button-group>
       </div>
@@ -33,36 +18,18 @@
                         type="text"
                         placeholder="Enter message"></b-form-input>
         </div>
-        <div v-if="channelMessages.length > 0" class="message-box">
-          <div class="response-box">Socket response</div>
-          <b-list-group>
-            <b-list-group-item v-for="message in channelMessages">{{message}}</b-list-group-item>
-          </b-list-group>
-        </div>
-      </div>
-
-      <div class="send-box">
-        <div class="input-form">
-          <b-button @click="nspSendMessage()" variant="outline-success">Submit Nsp</b-button>
-          <b-form-input v-model="nspSendMessageInput"
-                        type="text"
-                        placeholder="Enter nsp message"></b-form-input>
-        </div>
-        <div v-if="nspChannelMessages.length > 0" class="message-box">
-          <div class="response-box">Namespace socket response</div>
-          <b-list-group>
-            <b-list-group-item v-for="message in nspChannelMessages">{{message}}</b-list-group-item>
-          </b-list-group>
-        </div>
       </div>
     </div>
 
     <div class="logs">
       <div class="logs-header">Event Log</div>
       <div class="logs-box">
-        <b-list-group>
-          <b-list-group-item v-for="message in socketMessages">{{message}}</b-list-group-item>
-        </b-list-group>
+        {{applicationsSession}}
+        <br><br>
+        {{devices}}
+        <!--<b-list-group>-->
+          <!--<b-list-group-item v-for="message in socketMessages">{{message}}</b-list-group-item>-->
+        <!--</b-list-group>-->
       </div>
     </div>
 
@@ -81,24 +48,14 @@
       }
     },
     computed: {
-      ...mapState('socketModule', ['socketMessages', 'connected', 'nspConnected']),
-      ...mapState('channelModule', ['channelMessages', 'nspChannelMessages'])
+      ...mapState('devicesModule', ['devices', 'applicationsSession'])
     },
     methods: {
-      ...mapActions('socketModule', ['socketEmitSendMessage', 'namespaceSocketEmitSendMessage',
-        'socketDisconnect', 'socketConnect', 'namespaceSocketConnect', 'namespaceSocketDisconnect']),
-      ...mapActions('devicesModule', ['socketEmit_joinSession']),
+      ...mapActions('devicesModule', ['socketConnect', 'socketEmit_joinSession']),
       sendMessage() {
         if (this.sendMessageInput !== '') {
-          // this.socketEmitSendMessage(this.sendMessageInput);
           this.socketEmit_joinSession(this.sendMessageInput);
           this.sendMessageInput = '';
-        }
-      },
-      nspSendMessage() {
-        if (this.nspSendMessageInput !== '') {
-          this.namespaceSocketEmitSendMessage(this.nspSendMessageInput);
-          this.nspSendMessageInput = '';
         }
       }
     }
