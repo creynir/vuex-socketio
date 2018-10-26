@@ -5,5 +5,12 @@ npm-debug.log
 yarn-error.log
 package-lock.json
 
+#build artfacts
+build/
+build/**
+build/**/*
+
+.nyc_output/
+
 # Editor directories and files
 .idea
