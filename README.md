@@ -1,4 +1,6 @@
 # vuex-socketio
+[![Build Status](https://travis-ci.org/creynir/vuex-socketio.svg?branch=master)](https://travis-ci.org/creynir/vuex-socketio)
+[![Coverage Status](https://coveralls.io/repos/github/creynir/vuex-socketio/badge.svg?branch=master)](https://coveralls.io/github/creynir/vuex-socketio?branch=master)
 [![NPM version](https://img.shields.io/npm/v/vuex-socketio.svg)](https://www.npmjs.com/package/vuex-socketio)
 ![Vuex v3 compatible](https://img.shields.io/badge/Vuex%20v3-compatible-green.svg)
 <a href="https://www.npmjs.com/package/vuex-socketio"><img src="https://img.shields.io/npm/dt/vuex-socketio.svg" alt="Downloads"></a>
