@@ -6,9 +6,9 @@ yarn-error.log
 package-lock.json
 
 #build artfacts
-build/
-build/**
-build/**/*
+coverage/
+coverage/**
+coverage/**/*
 
 .nyc_output/
 
