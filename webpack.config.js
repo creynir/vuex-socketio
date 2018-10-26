@@ -17,23 +17,11 @@ module.exports = {
         })
     ],
     module: {
-        loaders: [
-            {
-                test: /\.js$/,
-                exclude: /node_modules/,
-                loader: 'babel-loader',
-                query: {
-                    presets: ['es2015']
-                }
-            },
-            {
-                test: /\.js$/,
-                include: [
-                    path.resolve(__dirname, './src')
-                ],
-                loader: 'eslint',
-                exclude: /node_modules/
-            }
-        ]
+        rules: [{
+            test: /\.js$/,
+            exclude: /node_modules/,
+            enforce: 'pre',
+            loaders: ['babel-loader', 'eslint-loader']
+        }]
     }
 };

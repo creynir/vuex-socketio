@@ -1,0 +1,19 @@
+{
+  "presets": [
+    ["env", {"modules": false}], "stage-0"
+  ],
+  "env": {
+    "test": {
+      "presets": [ ["env"] ],
+      "plugins": [
+        ["istanbul", {
+          "instrumenterConfig": {
+            "embedSource": true
+          }
+        }],
+        "rewire",
+        "rewire-ignore-coverage"
+      ]
+    }
+  }
+}

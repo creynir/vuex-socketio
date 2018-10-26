@@ -1,0 +1,20 @@
+{
+    "reporter": [
+        "lcov",
+        "text"
+    ],
+    "require": [
+        "babel-register"
+    ],
+    "exclude": [
+      "**/node_modules/**",
+      "./demo/**",
+      ".tmp",
+      "*webpack*",
+      "**/tests/**",
+      "**/mocks/**"
+    ],
+    "sourceMap": false,
+    "instrument": false,
+    "report-dir": "./build/coverage"
+ }

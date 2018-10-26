@@ -1,18 +1,13 @@
-import { formatters, normalizeString } from './utils.js';
+import { formatters, normalizeString } from './utils/utils.js';
 
-export default function createSocketIoPlugin (socket, options) {
+export default function createSocketIoPlugin (socket, { channelFormat = 'UppSnakeCase', emitPrefix = 'socketEmit', onPrefix = 'socketOn', defaultPrefixes = [] } = {}) {
     const sockets = Array.isArray(socket) ? socket : [socket];
     const defaultFnPrefix = 'socket';
+    const channelFormatter = formatters[channelFormat];
 
-    options = options || {};
-    options.channelFormat = options.channelFormat || 'UppSnakeCase';
-    options.firstLetLowCase = options.firstLetLowCase || false;
-    options.emitPrefix = options.emitPrefix || 'socketEmit';
-    options.onPrefix = options.onPrefix || 'socketOn';
-    options.defaultPrefixes = options.defaultPrefixes || [];
-    options.defaultPrefixes = options.defaultPrefixes.concat(['socketConnect', 'socketDisconnect']).map(prefix => normalizeString(prefix));
+    defaultPrefixes = defaultPrefixes.concat(['socketConnect', 'socketDisconnect']).map(prefix => normalizeString(prefix));
 
-    const channelFormatter = formatters[options.channelFormat];
+    const options = { channelFormat, emitPrefix, onPrefix, defaultPrefixes };
 
     return store => {
         sockets.forEach(socket => {
@@ -69,10 +64,8 @@ export default function createSocketIoPlugin (socket, options) {
                 }
                 const prefix = _options.defaultPrefixes.find(prefix => checkType(action.type, _options.socketNsp + prefix, _options.modulesNspList));
                 if (prefix && prefix.indexOf(defaultFnPrefix) !== -1) {
-                    const defaultFn = prefix.slice(prefix.indexOf(defaultFnPrefix) + defaultFnPrefix.length);
-                    if (typeof socket[defaultFn] === 'function') {
-                        socket[defaultFn]();
-                    }
+                    const fnName = prefix.slice(prefix.indexOf(defaultFnPrefix) + defaultFnPrefix.length);
+                    callSocketFunction(socket, fnName);
                 }
             });
         });
@@ -89,12 +82,12 @@ export default function createSocketIoPlugin (socket, options) {
  */
 function commitToStore (store, channelName, payload, _options) {
     const normalizedChannelName = normalizeString(channelName);
-    _options.storeMutations.map(mutationType => {
+    _options.storeMutations.forEach(mutationType => {
         if (checkType(mutationType, _options.socketNsp + _options.onPrefix + normalizedChannelName, _options.modulesNspList)) {
             store.commit(mutationType, payload);
         }
     });
-    _options.storeActions.map(actionType => {
+    _options.storeActions.forEach(actionType => {
         if (checkType(actionType, _options.socketNsp + _options.onPrefix + normalizedChannelName, _options.modulesNspList)) {
             store.dispatch(actionType, payload);
         }
@@ -106,6 +99,7 @@ function commitToStore (store, channelName, payload, _options) {
  * @param type of function
  * @param prefix
  * @param modulesNspList with module namespaces
+ * @return boolean
  * @api private
  */
 function checkType (type, prefix, modulesNspList) {
@@ -128,4 +122,15 @@ function getChannelName (actionType, prefix) {
     const pActionType = formatters.PascalCase(actionType);
     const pPrefix = formatters.PascalCase(prefix);
     return pActionType.slice(pActionType.indexOf(pPrefix) + pPrefix.length);
+}
+
+/** Calls requested socket function if exists
+ * @param socket
+ * @param fnName
+ * @api private
+ */
+function callSocketFunction (socket, fnName) {
+    if (typeof socket[fnName] === 'function') {
+        socket[fnName]();
+    }
 }
