@@ -10,7 +10,7 @@
     "test": "npm run lint && npm run mocha",
     "lint": "eslint src/ --ext .js",
     "mocha": "NODE_ENV=test mocha-webpack nyc --recursive --webpack-config webpack.test.config.js  \"src/**/*.test.js\"",
-    "coveralls": "nyc --reporter=lcov --reporter=text"
+    "coveralls": "npm test && nyc --reporter=lcov --reporter=text | coveralls"
   },
   "homepage": "https://github.com/creynir/vuex-socketio",
   "bugs": "https://github.com/creynir/vuex-socketio/issues",
