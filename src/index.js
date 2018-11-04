@@ -43,12 +43,7 @@ export default function createSocketIoPlugin (socket, { converter = toUppSnakeCa
 function bindMutationsToSocket (options) {
     Object.entries(options.store._mutations).forEach(([mutationName, funcArr]) => {
         if (checkType(mutationName, options.socketNsp + options.onPrefix, options.modulesNspList)) {
-            let channelName = getChannelName(mutationName, options.onPrefix);
-            channelName = options.defaultChannels.find(item => item === channelName.toLowerCase()) || options.converter(channelName);
-            funcArr.forEach((func) => {
-                options.socket.on(channelName, (payload) =>
-                    func(payload));
-            });
+            bindFunctionToListener(mutationName, funcArr, options);
         }
     });
 }
@@ -63,7 +58,7 @@ function bindMutationsToSocket (options) {
 function bindActionsToSocket (options) {
     Object.entries(options.store._actions).forEach(([actionName, funcArr]) => {
         if (checkType(actionName, options.socketNsp + options.onPrefix, options.modulesNspList)) {
-            bindActionToListener(actionName, funcArr, options);
+            bindFunctionToListener(actionName, funcArr, options);
         }
         if (checkType(actionName, options.socketNsp + options.emitPrefix, options.modulesNspList)) {
             bindActionToEmitter(actionName, funcArr, options);
@@ -75,17 +70,17 @@ function bindActionsToSocket (options) {
     });
 }
 
-/** Bind action to socket listener if its name contains onPrefix
- * @param actionName
+/** Bind store function to socket listener if its name contains onPrefix
+ * @param functionName
  * @param funcArr
  * @param options
  * @api private
  */
-function bindActionToListener (actionName, funcArr, options) {
-    let channelName = getChannelName(actionName, options.onPrefix);
-    channelName = options.defaultChannels.find(item => item === channelName.toLowerCase()) || options.converter(channelName);
+function bindFunctionToListener (functionName, funcArr, options) {
+    const channelName = getChannelName(functionName, options.onPrefix);
+    const fChannelName = options.defaultChannels.find(item => item === channelName.toLowerCase()) || options.converter(channelName);
     funcArr.forEach((func) => {
-        options.socket.on(channelName, (payload) =>
+        options.socket.on(fChannelName, (payload) =>
             func(payload));
     });
 }

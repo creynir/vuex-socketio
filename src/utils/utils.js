@@ -23,5 +23,5 @@ export function toUppSnakeCase (string) {
  */
 function toSpaceCase (string) {
     return string.replace(/[\W_]/g, ' ')
-        .replace(/([a-z])([A-Z])/g, '$1 $2');
+        .replace(/([a-z])([A-Z])/g, '$1 $2').trim();
 }

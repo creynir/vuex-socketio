@@ -281,42 +281,27 @@ describe('main', function () {
                 const bindMutationsToSocket = pluginAPI.__get__('bindMutationsToSocket');
 
                 it('should bind mutation to default channel listener', function () {
-                    const mockChannelName = 'Connect';
-                    const mockChannel = 'connect';
+                    const bindFunctionToListenerStub = sinon.stub();
+                    pluginAPI.__Rewire__('bindFunctionToListener', bindFunctionToListenerStub);
                     checkTypeStub.returns(true);
                     options.store._mutations = { socketOnConnect: [onConnectStub] };
-                    getChannelNameStub.onFirstCall().returns(mockChannelName);
-
                     bindMutationsToSocket(options);
-                    expect(socketOnStub.getCall(0).args[0]).to.eql(mockChannel);
-                    expect(socketOnStub.getCall(0).args[1]).to.be.a('function');
-                });
 
-                it('should bind mutation to MESSAGE channel listener', function () {
-                    const mockChannelName = 'Message';
-                    const mockChannel = 'MESSAGE';
-                    checkTypeStub.returns(true);
-                    options.store._mutations = { socketOnMessage: [onMessageStub] };
-                    options.converter.returns(mockChannel);
-                    getChannelNameStub.onFirstCall().returns(mockChannelName);
-
-                    bindMutationsToSocket(options);
-                    expect(socketOnStub.getCall(0).args[0]).to.eql(mockChannel);
-                    expect(socketOnStub.getCall(0).args[1]).to.be.a('function');
+                    expect(bindFunctionToListenerStub).to.have.been.callCount(1);
                 });
             });
             describe('bindActionsToSocket', function () {
-                let bindActionToListenerStub;
+                let bindFunctionToListenerStub;
                 let bindActionToEmitterStub;
                 let bindDefaultActionToSocketStub;
                 const bindActionsToSocket = pluginAPI.__get__('bindActionsToSocket');
 
                 beforeEach(function () {
-                    bindActionToListenerStub = sinon.stub();
+                    bindFunctionToListenerStub = sinon.stub();
                     bindActionToEmitterStub = sinon.stub();
                     bindDefaultActionToSocketStub = sinon.stub();
                     pluginAPI.__Rewire__('checkType', checkTypeStub);
-                    pluginAPI.__Rewire__('bindActionToListener', bindActionToListenerStub);
+                    pluginAPI.__Rewire__('bindFunctionToListener', bindFunctionToListenerStub);
                     pluginAPI.__Rewire__('bindActionToEmitter', bindActionToEmitterStub);
                     pluginAPI.__Rewire__('bindDefaultActionToSocket', bindDefaultActionToSocketStub);
                 });
@@ -326,7 +311,7 @@ describe('main', function () {
                     pluginAPI.__ResetDependency__('bindDefaultActionToSocket');
                 });
 
-                it('should call binActionToListener', function () {
+                it('should call bindFunctionToListener', function () {
                     checkTypeStub.onFirstCall().returns(true);
                     options.store._actions = {
                         socketOnMessage: [function () {
@@ -334,7 +319,7 @@ describe('main', function () {
                     };
                     bindActionsToSocket(options);
 
-                    expect(bindActionToListenerStub).to.have.been.callCount(1);
+                    expect(bindFunctionToListenerStub).to.have.been.callCount(1);
                     expect(bindActionToEmitterStub).to.have.been.callCount(0);
                     expect(bindDefaultActionToSocketStub).to.have.been.callCount(0);
                 });
@@ -348,7 +333,7 @@ describe('main', function () {
                     bindActionsToSocket(options);
 
                     expect(bindActionToEmitterStub).to.have.been.callCount(1);
-                    expect(bindActionToListenerStub).to.have.been.callCount(0);
+                    expect(bindFunctionToListenerStub).to.have.been.callCount(0);
                     expect(bindDefaultActionToSocketStub).to.have.been.callCount(0);
                 });
 
@@ -362,12 +347,12 @@ describe('main', function () {
                     bindActionsToSocket(options);
 
                     expect(bindDefaultActionToSocketStub).to.have.been.callCount(1);
-                    expect(bindActionToListenerStub).to.have.been.callCount(0);
+                    expect(bindFunctionToListenerStub).to.have.been.callCount(0);
                     expect(bindActionToEmitterStub).to.have.been.callCount(0);
                 });
             });
-            describe('bindActionToListener', function () {
-                const bindActionToListener = pluginAPI.__get__('bindActionToListener');
+            describe('bindFunctionToListener', function () {
+                const bindFunctionToListener = pluginAPI.__get__('bindFunctionToListener');
 
                 it('should subscribe action to default channel', function () {
                     const mockChannelName = 'Connect';
@@ -375,7 +360,7 @@ describe('main', function () {
                     const mockActionName = 'socketOnConnect';
                     getChannelNameStub.onFirstCall().returns(mockChannelName);
 
-                    bindActionToListener(mockActionName, [onConnectStub], options);
+                    bindFunctionToListener(mockActionName, [onConnectStub], options);
                     expect(socketOnStub.getCall(0).args[0]).to.eql(mockChannel);
                     expect(socketOnStub.getCall(0).args[1]).to.be.a('function');
                 });
@@ -387,7 +372,7 @@ describe('main', function () {
                     options.converter.returns(mockChannel);
                     getChannelNameStub.onFirstCall().returns(mockChannelName);
 
-                    bindActionToListener(mockActionName, [onMessageStub], options);
+                    bindFunctionToListener(mockActionName, [onMessageStub], options);
                     expect(socketOnStub.getCall(0).args[0]).to.eql(mockChannel);
                     expect(socketOnStub.getCall(0).args[1]).to.be.a('function');
                 });

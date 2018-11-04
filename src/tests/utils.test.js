@@ -17,7 +17,7 @@ describe('utils', function () {
         });
     });
     describe('converters', function () {
-        const mockStrings = ['someString', 'SomeString', 'some-string', 'some_string', 'SOME-STRING', 'SOME_STRING'];
+        const mockStrings = ['someString ', 'SomeString', '/someString/ ', '_SomeString_', '-some-string-', 'some_string', '_SOME-STRING_', ' SOME_STRING'];
 
         describe('toUppSnakeCase', function () {
             it('should convert all strings to snake case', function () {
