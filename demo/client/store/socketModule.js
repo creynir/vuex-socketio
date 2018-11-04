@@ -30,10 +30,14 @@ const socketModule = {
     actions: {
         socketConnect: () => {},
         socketDisconnect: () => {},
-        socketEmitSendMessage: (context, message) => {},
+        socketEmitSendMessage: ({ commit }, message) => {
+            commit('pushMessageToSocketMessages', 'emit to SEND_MESSAGE: ' + message);
+        },
         namespaceSocketConnect: () => {},
         namespaceSocketDisconnect: () => {},
-        namespaceSocketEmitSendMessage: (context, message) => {}
+        namespaceSocketEmitSendMessage: ({ commit }, message) => {
+            commit('pushMessageToSocketMessages', 'emit to namespace/SEND_MESSAGE: ' + message);
+        }
     }
 };
 

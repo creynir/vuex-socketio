@@ -1,40 +1,21 @@
-import { formatters, normalizeString } from './utils/utils.js';
+import { toUppSnakeCase, normalizeString } from './utils/utils.js';
 
-export default function createSocketIoPlugin (socket, { channelFormat = 'UppSnakeCase', emitPrefix = 'socketEmit', onPrefix = 'socketOn', defaultPrefixes = [] } = {}) {
-    const sockets = Array.isArray(socket) ? socket : [socket];
-    const defaultFnPrefix = 'socket';
-    const channelFormatter = formatters[channelFormat];
+export default function createSocketIoPlugin (socket, { converter = toUppSnakeCase, emitPrefix = 'socketEmit', onPrefix = 'socketOn', defaultFunctions: defaultFunctions = [] } = {}) {
+    const sockets = getSocketAsArr(socket);
 
-    defaultPrefixes = defaultPrefixes.concat(['socketConnect', 'socketDisconnect']).map(prefix => normalizeString(prefix));
+    defaultFunctions = defaultFunctions.concat(['socketConnect', 'socketDisconnect']);
 
-    const options = { channelFormat, emitPrefix, onPrefix, defaultPrefixes };
+    const options = { converter, emitPrefix, onPrefix, defaultFunctions };
 
     return store => {
         sockets.forEach(socket => {
             let _options = Object.assign({}, options);
+            _options.defaultFnPrefix = 'socket';
             _options.socketNsp = socket.nsp === '/' ? '' : normalizeString(socket.nsp.slice(1));
             _options.modulesNspList = Object.keys(store._modulesNamespaceMap).map(nsp => normalizeString(nsp));
-            _options.storeMutations = Object.keys(store._mutations);
-            _options.storeActions = Object.keys(store._actions);
-
-            /** Fire on all socket events,
-             * trigger commitToStoreFunction
-             *  @param packet with channel name and payload
-             *  @api private
-             */
-            const onevent = socket.onevent;
-            socket.onevent = function (packet) {
-                onevent.call(socket, packet);
-                const channelName = packet.data[0];
-                const payload = packet.data[1];
-                commitToStore(store, channelName, payload, _options);
-            };
-
-            /** Fire on all default events,
-             * trigger commitToStoreFunction
-             * @api private
-             */
-            [
+            _options.store = store;
+            _options.socket = socket;
+            _options.defaultChannels = [
                 'connect',
                 'error',
                 'disconnect',
@@ -48,50 +29,100 @@ export default function createSocketIoPlugin (socket, { channelFormat = 'UppSnak
                 'connecting',
                 'ping',
                 'pong'
-            ].forEach(channelName =>
-                socket.on(channelName, (payload) =>
-                    commitToStore(store, channelName, payload, _options)));
+            ];
 
-            /** Subscribe the socket.emit and default socket fn's to all related actions
-             * by prefix, moduleNspList and socket namespace
-             *  @param action
-             *  @api private
-             */
-            store.subscribeAction(action => {
-                if (checkType(action.type, _options.socketNsp + _options.emitPrefix, _options.modulesNspList)) {
-                    const channelName = getChannelName(action.type, _options.emitPrefix);
-                    socket.emit(channelFormatter(channelName), action.payload);
-                }
-                const prefix = _options.defaultPrefixes.find(prefix => checkType(action.type, _options.socketNsp + prefix, _options.modulesNspList));
-                if (prefix && prefix.indexOf(defaultFnPrefix) !== -1) {
-                    const fnName = prefix.slice(prefix.indexOf(defaultFnPrefix) + defaultFnPrefix.length);
-                    callSocketFunction(socket, fnName);
-                }
-            });
+            bindMutationsToSocket(_options);
+            bindActionsToSocket(_options);
         });
     };
 }
-
-/** Commit payload to target mutation and action by channelName,
- * socket namespace, prefix and modulesNspList
- *  @param store
- *  @param channelName
- *  @param payload
- *  @param _options with storeMutations, onPrefix and modulesNspList
- *  @api private
+/** Binds all store mutations to socket listeners by prefix in their name
+ * @param options
+ * @api private
  */
-function commitToStore (store, channelName, payload, _options) {
-    const normalizedChannelName = normalizeString(channelName);
-    _options.storeMutations.forEach(mutationType => {
-        if (checkType(mutationType, _options.socketNsp + _options.onPrefix + normalizedChannelName, _options.modulesNspList)) {
-            store.commit(mutationType, payload);
+function bindMutationsToSocket (options) {
+    Object.entries(options.store._mutations).forEach(([mutationName, funcArr]) => {
+        if (checkType(mutationName, options.socketNsp + options.onPrefix, options.modulesNspList)) {
+            let channelName = getChannelName(mutationName, options.onPrefix);
+            channelName = options.defaultChannels.find(item => item === channelName.toLowerCase()) || options.converter(channelName);
+            funcArr.forEach((func) => {
+                options.socket.on(channelName, (payload) =>
+                    func(payload));
+            });
         }
     });
-    _options.storeActions.forEach(actionType => {
-        if (checkType(actionType, _options.socketNsp + _options.onPrefix + normalizedChannelName, _options.modulesNspList)) {
-            store.dispatch(actionType, payload);
+}
+
+/** Binds all store actions 3 different function types:
+ * 1. Bind action to socket listener if its name contains onPrefix
+ * 2. Bind action to socket emitter if its name contains emitPrefix
+ * 3. Bind action to socket default function if its name contains defaultFnPrefix and the function exists
+ * @param options
+ * @api private
+ */
+function bindActionsToSocket (options) {
+    Object.entries(options.store._actions).forEach(([actionName, funcArr]) => {
+        if (checkType(actionName, options.socketNsp + options.onPrefix, options.modulesNspList)) {
+            bindActionToListener(actionName, funcArr, options);
+        }
+        if (checkType(actionName, options.socketNsp + options.emitPrefix, options.modulesNspList)) {
+            bindActionToEmitter(actionName, funcArr, options);
+        }
+        const functionName = options.defaultFunctions.find(fnName => checkType(actionName, options.socketNsp + fnName, options.modulesNspList));
+        if (functionName && functionName.indexOf(options.defaultFnPrefix) !== -1) {
+            bindDefaultActionToSocket(actionName, funcArr, functionName, options);
         }
     });
+}
+
+/** Bind action to socket listener if its name contains onPrefix
+ * @param actionName
+ * @param funcArr
+ * @param options
+ * @api private
+ */
+function bindActionToListener (actionName, funcArr, options) {
+    let channelName = getChannelName(actionName, options.onPrefix);
+    channelName = options.defaultChannels.find(item => item === channelName.toLowerCase()) || options.converter(channelName);
+    funcArr.forEach((func) => {
+        options.socket.on(channelName, (payload) =>
+            func(payload));
+    });
+}
+
+/** Bind action to socket emitter if its name contains emitPrefix
+ * @param actionName
+ * @param funcArr
+ * @param options
+ * @api private
+ */
+function bindActionToEmitter (actionName, funcArr, options) {
+    const channelName = getChannelName(actionName, options.emitPrefix);
+    funcArr.forEach((func, index) => {
+        options.store._actions[actionName][index] = (payload) => {
+            options.socket.emit(options.converter(channelName), payload);
+            func.call(options.store, payload);
+        };
+    });
+}
+
+/** Bind action to sockets default function if actions name contains defaultFnPrefix and the function exists in socket
+ * @param actionName
+ * @param funcArr
+ * @param functionName
+ * @param options
+ * @api private
+ */
+function bindDefaultActionToSocket (actionName, funcArr, functionName, options) {
+    const socketFnName = getChannelName(functionName, options.defaultFnPrefix).toLowerCase();
+    if (checkIfSocketFnExists(socketFnName, options.socket)) {
+        funcArr.forEach((func, index) => {
+            options.store._actions[actionName][index] = (payload) => {
+                func.call(options.store, payload);
+                options.socket[socketFnName]();
+            };
+        });
+    }
 }
 
 /** Check if the function type (name)
@@ -105,11 +136,8 @@ function commitToStore (store, channelName, payload, _options) {
 function checkType (type, prefix, modulesNspList) {
     const normalizedType = normalizeString(type);
     const normalizedPrefix = normalizeString(prefix);
-    const moduleNamespace = modulesNspList.find(moduleNsp => normalizedType.includes(moduleNsp + normalizedPrefix));
-    if (moduleNamespace) {
-        return normalizedType.slice(normalizedType.indexOf(moduleNamespace) + moduleNamespace.length).startsWith(normalizedPrefix);
-    }
-    return normalizedType.startsWith(normalizedPrefix);
+    const moduleNamespace = modulesNspList.find(moduleNsp => normalizedType.includes(moduleNsp + normalizedPrefix)) || '';
+    return normalizedType.startsWith(moduleNamespace + normalizedPrefix);
 }
 
 /** Return socket channel name sliced from action type
@@ -119,18 +147,26 @@ function checkType (type, prefix, modulesNspList) {
  * @api private
  */
 function getChannelName (actionType, prefix) {
-    const pActionType = formatters.PascalCase(actionType);
-    const pPrefix = formatters.PascalCase(prefix);
-    return pActionType.slice(pActionType.indexOf(pPrefix) + pPrefix.length);
+    const pActionType = toUppSnakeCase(actionType);
+    const pPrefix = toUppSnakeCase(prefix);
+    return pActionType.slice(pActionType.indexOf(pPrefix) + pPrefix.length + 1);
 }
 
-/** Calls requested socket function if exists
+/** Return true if function exists in socket instance
+ * @param socketFnName
  * @param socket
- * @param fnName
+ * @return boolean
  * @api private
  */
-function callSocketFunction (socket, fnName) {
-    if (typeof socket[fnName] === 'function') {
-        socket[fnName]();
-    }
+function checkIfSocketFnExists (socketFnName, socket) {
+    return typeof socket[socketFnName] === 'function';
+}
+
+/** Return socket in array
+ * @param socket
+ * @return []
+ * @api private
+ */
+function getSocketAsArr (socket) {
+    return Array.isArray(socket) ? socket : [socket];
 }

@@ -66,10 +66,10 @@ actions: {
         ...
     }
 ```
-Where `socketOn` is a prefix for listener and `message` is a desired channel name
+Where `socketOn` is a prefix for listeners and `message` is a desired channel name
 
 #### Set up emiters
-**Emiters can be used only with actions**
+**Only actions can be used for emitting to socket**
 
 Define `socket.emit` prefix:
 ``` js
@@ -83,25 +83,26 @@ actions: {
         ...
      }
 ```
-Where `socketEmit` is a prefix for emit messages and `message` is a desired channel name
+Where `socketEmit` is a prefix for emitting messages and `message` is a desired channel name
 
-**For opening and closing the connection use: `socketConnect` && `socketDisconnect` actions**
+**Open and close socket connection**
+Use: `socketConnect` && `socketDisconnect` actions
 
 You can also add some prefixes for default functions, e.g.: `socketReconnect`,
 
-where `socket` is a mandatory prefix and `reconnect` is a function name
+where `socket` is a mandatory prefix and `reconnect` is an existing function name
 ``` js
-const socketPlugin = createSocketIoPlugin(socket, {defaultPrefixes: ['socketReconnect']);
+const socketPlugin = createSocketIoPlugin(socket, {defaultFunctions: ['socketReconnect']);
 ```
 
 #### Set up channel name formatter
-You can chose between 4 different cases for channel formatting:<br />
-`CamelCase: channelName`, `PascalCase: ChannelName`, `UppSnakeCase: CHANNEL_NAME`, `LowSnakeCase: channel_name`<br />
-Use channelFormat property to set formatter:
+You can provide your own channel converter function:<br />
+
+Use converter to set the property:
 ``` js
-const socketPlugin = createSocketIoPlugin(socket, {channelFormat: 'CamelCase'});
+const socketPlugin = createSocketIoPlugin(socket, {converter: _.camelCase});
 ```
-The **default** value is `UppSnakeCase`
+The **default** channel name will be in `UPPER_SNAKE_CASE`
 
 #### Namespaces for store modules and for socket instances are supported.
 
@@ -173,25 +174,7 @@ export default new Vuex.Store({
 })
 ```
 ### Notes
-**Plugin supports action and mutation names in snake case also.**<br />
-Define prefixes:
-``` js
-const socketPlugin = createSocketIoPlugin(socket, {emitPrefix: 'socket_emit_', onPrefix: 'socket_on_'});
-```
-In store:
-``` js
-mutations: {
-        socket_on_message: (state,  message) => {
-            state.message = message;
-        },
-        ...
-    },
-actions: {
-        namespace_socket_on_other_message: (context, message) => {
-        ...some code here
-        },
-        ...
-    }
-```
+**Plugin doesn't support dynamic store modules.**<br />
+
 ### Example
 [demo](./demo)

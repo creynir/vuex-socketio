@@ -13,11 +13,11 @@ const socketModule = {
         }
     },
     actions: {
-        socketOnMessage: (context, message) => {
-            context.commit('socketModule/pushMessageToSocketMessages', 'socket MESSAGE: ' + message, { root: true });
+        socketOnMessage: ({ commit }, message) => {
+            commit('socketModule/pushMessageToSocketMessages', 'socket on MESSAGE: ' + message, { root: true });
         },
-        namespaceSocketOnMessage: (context, message) => {
-            context.commit('socketModule/pushMessageToSocketMessages', 'namespace/socket MESSAGE: ' + message, { root: true });
+        namespaceSocketOnMessage: ({ commit }, message) => {
+            commit('socketModule/pushMessageToSocketMessages', 'namespace/socket on MESSAGE: ' + message, { root: true });
         }
     }
 };

@@ -38,15 +38,43 @@ describe('main', function () {
             namespaceSocketOnMessage: namespaceSocketOnMessageMutationStub
         },
         actions: {
-            socketConnect: () => {},
-            socketDisconnect: () => {},
-            socketEmitSomeChannel: (context, message) => {},
+            socketConnect: () => {
+            },
+            socketDisconnect: () => {
+            },
+            socketEmitSomeChannel: (context, message) => {
+            },
             socketOnMessage: socketOnMessageActionStub,
 
-            namespaceSocketConnect: () => {},
-            namespaceSocketDisconnect: () => {},
-            namespaceSocketEmitSomeChannel: (context, message) => {},
+            namespaceSocketConnect: () => {
+            },
+            namespaceSocketDisconnect: () => {
+            },
+            namespaceSocketEmitSomeChannel: (context, message) => {
+            },
             namespaceSocketOnMessage: namespaceSocketOnMessageActionStub
+        }
+    };
+
+    const module2 = {
+        mutations: {
+            socketOnConnect: socketOnConnectStub,
+            socketOnDisconnect: socketOnDisconnectStub,
+            socketOnMessage: socketOnMessageMutationStub,
+
+            namespaceSocketOnConnect: namespaceSocketOnConnectStub,
+            namespaceSocketOnDisconnect: namespaceSocketOnDisconnectStub,
+            namespaceSocketOnMessage: namespaceSocketOnMessageMutationStub
+        },
+        actions: {
+            socketConnect: () => {
+            },
+            socketDisconnect: () => {
+            },
+            namespaceSocketConnect: () => {
+            },
+            namespaceSocketDisconnect: () => {
+            }
         }
     };
 
@@ -59,7 +87,8 @@ describe('main', function () {
             const socketPlugin = createSocketIoPlugin([io, nspIo]);
             store = new Vuex.Store({
                 modules: {
-                    module
+                    module,
+                    module2
                 },
                 plugins: [socketPlugin]
             });
@@ -68,50 +97,96 @@ describe('main', function () {
             sinon.reset();
         });
         describe('call socket functions', function () {
-            it('plugin should call socket connect', function () {
+            it('plugin should call module socket connect', function () {
                 const socketSpy = sinon.spy(io, 'connect');
 
                 store.dispatch('module/socketConnect');
 
                 expect(socketSpy).to.have.been.callCount(1);
-                expect(socketOnConnectStub).to.have.been.callCount(1);
+                expect(socketOnConnectStub).to.have.been.callCount(2);
                 expect(namespaceSocketOnConnectStub.notCalled).to.eql(true);
             });
 
-            it('plugin should call nsp socket connect', function () {
+            it('plugin should call socket connect', function () {
+                const socketSpy = sinon.spy(io, 'connect');
+
+                store.dispatch('socketConnect');
+
+                expect(socketSpy).to.have.been.callCount(1);
+                expect(socketOnConnectStub).to.have.been.callCount(2);
+                expect(namespaceSocketOnConnectStub.notCalled).to.eql(true);
+            });
+
+            it('plugin should call nsp module socket connect', function () {
                 const nspSocketSpy = sinon.spy(nspIo, 'connect');
 
                 store.dispatch('module/namespaceSocketConnect');
 
                 expect(nspSocketSpy).to.have.been.callCount(1);
-                expect(namespaceSocketOnConnectStub).to.have.been.callCount(1);
+                expect(namespaceSocketOnConnectStub).to.have.been.callCount(2);
                 expect(socketOnConnectStub.notCalled).to.eql(true);
             });
 
-            it('plugin should call socket disconnect', function () {
+            it('plugin should call nsp socket connect', function () {
+                const nspSocketSpy = sinon.spy(nspIo, 'connect');
+
+                store.dispatch('namespaceSocketConnect');
+
+                expect(nspSocketSpy).to.have.been.callCount(1);
+                expect(namespaceSocketOnConnectStub).to.have.been.callCount(2);
+                expect(socketOnConnectStub.notCalled).to.eql(true);
+            });
+
+            it('plugin should call module socket disconnect', function () {
                 const socketSpy = sinon.spy(io, 'disconnect');
 
                 store.dispatch('module/socketDisconnect');
 
                 expect(socketSpy).to.have.been.callCount(1);
-                expect(socketOnDisconnectStub).to.have.been.callCount(1);
+                expect(socketOnDisconnectStub).to.have.been.callCount(2);
                 expect(namespaceSocketOnDisconnectStub.notCalled).to.eql(true);
             });
 
-            it('plugin should call nsp socket disconnect', function () {
+            it('plugin should call socket disconnect', function () {
+                const socketSpy = sinon.spy(io, 'disconnect');
+
+                store.dispatch('socketDisconnect');
+
+                expect(socketSpy).to.have.been.callCount(1);
+                expect(socketOnDisconnectStub).to.have.been.callCount(2);
+                expect(namespaceSocketOnDisconnectStub.notCalled).to.eql(true);
+            });
+
+            it('plugin should call nsp module socket disconnect', function () {
                 const nspSocketSpy = sinon.spy(nspIo, 'disconnect');
 
                 store.dispatch('module/namespaceSocketDisconnect');
 
                 expect(nspSocketSpy).to.have.been.callCount(1);
-                expect(namespaceSocketOnDisconnectStub).to.have.been.callCount(1);
+                expect(namespaceSocketOnDisconnectStub).to.have.been.callCount(2);
+                expect(socketOnDisconnectStub.notCalled).to.eql(true);
+            });
+
+            it('plugin should call nsp socket disconnect', function () {
+                const nspSocketSpy = sinon.spy(nspIo, 'disconnect');
+
+                store.dispatch('namespaceSocketDisconnect');
+
+                expect(nspSocketSpy).to.have.been.callCount(1);
+                expect(namespaceSocketOnDisconnectStub).to.have.been.callCount(2);
                 expect(socketOnDisconnectStub.notCalled).to.eql(true);
             });
         });
         describe('call on()', function () {
-            it('should subscribe to all default events', function () {
-                expect(Object.keys(io.eventsMap).length).to.eql(13);
-                expect(Object.keys(nspIo.eventsMap).length).to.eql(13);
+            const mockDefaultChannels = [
+                'connect',
+                'disconnect'
+            ];
+            it('should subscribe to default events', function () {
+                mockDefaultChannels.forEach(function (channel) {
+                    expect(io.eventsMap[channel]).to.be.an('array');
+                    expect(nspIo.eventsMap[channel]).to.be.an('array');
+                });
             });
         });
         describe('call emit()', function () {
@@ -130,61 +205,243 @@ describe('main', function () {
                 expect(nspSocketEmitSpy).to.have.been.calledWith(mockChannelName, mockPayload);
             });
         });
-        describe('call onevent()', function () {
+        describe('call store listeners', function () {
             it('should call correct actions and mutations without socket namespace', function () {
-                const mockPacket = { data: ['message', 'somePayload'] };
+                const mockChannelName = 'MESSAGE';
+                const mockPayload = 'somePayload';
+                io.emit(mockChannelName, mockPayload);
 
-                io.onevent(mockPacket);
-
-                expect(socketOnMessageMutationStub).to.have.been.callCount(1);
+                expect(socketOnMessageMutationStub).to.have.been.callCount(2);
+                expect(socketOnMessageMutationStub.getCall(0).args[1]).to.eql(mockPayload);
                 expect(socketOnMessageActionStub).to.have.been.callCount(1);
+                expect(socketOnMessageActionStub.getCall(0).args[1]).to.eql(mockPayload);
+
                 expect(namespaceSocketOnMessageMutationStub.notCalled).to.eql(true);
                 expect(namespaceSocketOnMessageActionStub.notCalled).to.eql(true);
             });
 
             it('should call correct actions and mutations with socket namespace', function () {
-                const mockPacket = { data: ['message', 'somePayload'] };
+                const mockChannelName = 'MESSAGE';
+                const mockPayload = 'somePayload';
+                nspIo.emit(mockChannelName, mockPayload);
 
-                nspIo.onevent(mockPacket);
-
-                expect(namespaceSocketOnMessageMutationStub).to.have.been.callCount(1);
+                expect(namespaceSocketOnMessageMutationStub).to.have.been.callCount(2);
+                expect(namespaceSocketOnMessageMutationStub.getCall(0).args[1]).to.eql(mockPayload);
                 expect(namespaceSocketOnMessageActionStub).to.have.been.callCount(1);
+                expect(namespaceSocketOnMessageActionStub.getCall(0).args[1]).to.eql(mockPayload);
+
                 expect(socketOnMessageMutationStub.notCalled).to.eql(true);
                 expect(socketOnMessageActionStub.notCalled).to.eql(true);
             });
         });
     });
     describe('pluginApi', function () {
-        describe('commitToStore', function () {
-            it('should call store actions and mutations', function () {
-                const mockPayload = 'someMessage';
-                const mockChannelName = 'message';
-                const mockOPtions = { storeMutations: Object.keys(module.mutations), storeActions: Object.keys(module.actions), onPrefix: '', modulesNspList: [], socketNsp: '' };
+        describe('bind functions', function () {
+            const socketOnStub = sinon.stub();
+            const getChannelNameStub = sinon.stub();
+            const converterStub = sinon.stub();
+            const onConnectStub = sinon.stub();
+            const onMessageStub = sinon.stub();
+            const socketConnectStub = sinon.stub();
+            const socketEmitterStub = sinon.stub();
 
-                const normalizeStringSpy = sinon.stub().returns(mockChannelName);
-                pluginAPI.__Rewire__('normalizeString', normalizeStringSpy);
-                const checkTypeSpy = sinon.stub().returns(true);
-                pluginAPI.__Rewire__('checkType', checkTypeSpy);
-                const commitToStore = pluginAPI.__get__('commitToStore');
+            let checkTypeStub;
 
-                const commitSpy = sinon.stub();
-                const dispatchSpy = sinon.stub();
-                const store = { commit: commitSpy, dispatch: dispatchSpy };
-
-                commitToStore(store, mockChannelName, mockPayload, mockOPtions);
-
-                expect(normalizeStringSpy).calledWith(mockChannelName);
-                mockOPtions.storeMutations.forEach(function (mutation) {
-                    expect(checkTypeSpy).calledWith(mutation, mockOPtions.socketNsp + mockOPtions.onPrefix + mockChannelName, mockOPtions.modulesNspList);
-                    expect(commitSpy).calledWith(mutation);
-                });
-                mockOPtions.storeActions.forEach(function (action) {
-                    expect(checkTypeSpy).calledWith(action, mockOPtions.socketNsp + mockOPtions.onPrefix + mockChannelName, mockOPtions.modulesNspList);
-                    expect(dispatchSpy).calledWith(action);
-                });
-
-                pluginAPI.__ResetDependency__('normalizeString');
+            const options = {
+                store: {
+                    _mutations: {},
+                    _actions: {}
+                },
+                defaultChannels: ['connect'],
+                socket: {
+                    on: socketOnStub,
+                    emit: socketEmitterStub,
+                    connect: socketConnectStub
+                },
+                defaultFunctions: ['socketConnect', 'socketDisconnect'],
+                converter: converterStub
+            };
+            beforeEach(function () {
+                checkTypeStub = sinon.stub();
+                pluginAPI.__Rewire__('checkType', checkTypeStub);
+                pluginAPI.__Rewire__('getChannelName', getChannelNameStub);
+            });
+            afterEach(function () {
+                socketOnStub.reset();
+                getChannelNameStub.reset();
+                converterStub.reset();
+                onConnectStub.reset();
+                onMessageStub.reset();
+                socketConnectStub.reset();
+                socketEmitterStub.reset();
                 pluginAPI.__ResetDependency__('checkType');
+                pluginAPI.__ResetDependency__('getChannelName');
+            });
+            describe('bindMutationsToSocket', function () {
+                const bindMutationsToSocket = pluginAPI.__get__('bindMutationsToSocket');
+
+                it('should bind mutation to default channel listener', function () {
+                    const mockChannelName = 'Connect';
+                    const mockChannel = 'connect';
+                    checkTypeStub.returns(true);
+                    options.store._mutations = { socketOnConnect: [onConnectStub] };
+                    getChannelNameStub.onFirstCall().returns(mockChannelName);
+
+                    bindMutationsToSocket(options);
+                    expect(socketOnStub.getCall(0).args[0]).to.eql(mockChannel);
+                    expect(socketOnStub.getCall(0).args[1]).to.be.a('function');
+                });
+
+                it('should bind mutation to MESSAGE channel listener', function () {
+                    const mockChannelName = 'Message';
+                    const mockChannel = 'MESSAGE';
+                    checkTypeStub.returns(true);
+                    options.store._mutations = { socketOnMessage: [onMessageStub] };
+                    options.converter.returns(mockChannel);
+                    getChannelNameStub.onFirstCall().returns(mockChannelName);
+
+                    bindMutationsToSocket(options);
+                    expect(socketOnStub.getCall(0).args[0]).to.eql(mockChannel);
+                    expect(socketOnStub.getCall(0).args[1]).to.be.a('function');
+                });
+            });
+            describe('bindActionsToSocket', function () {
+                let bindActionToListenerStub;
+                let bindActionToEmitterStub;
+                let bindDefaultActionToSocketStub;
+                const bindActionsToSocket = pluginAPI.__get__('bindActionsToSocket');
+
+                beforeEach(function () {
+                    bindActionToListenerStub = sinon.stub();
+                    bindActionToEmitterStub = sinon.stub();
+                    bindDefaultActionToSocketStub = sinon.stub();
+                    pluginAPI.__Rewire__('checkType', checkTypeStub);
+                    pluginAPI.__Rewire__('bindActionToListener', bindActionToListenerStub);
+                    pluginAPI.__Rewire__('bindActionToEmitter', bindActionToEmitterStub);
+                    pluginAPI.__Rewire__('bindDefaultActionToSocket', bindDefaultActionToSocketStub);
+                });
+                afterEach(function () {
+                    pluginAPI.__ResetDependency__('bindActionToListener');
+                    pluginAPI.__ResetDependency__('bindActionToEmitter');
+                    pluginAPI.__ResetDependency__('bindDefaultActionToSocket');
+                });
+
+                it('should call binActionToListener', function () {
+                    checkTypeStub.onFirstCall().returns(true);
+                    options.store._actions = {
+                        socketOnMessage: [function () {
+                        }]
+                    };
+                    bindActionsToSocket(options);
+
+                    expect(bindActionToListenerStub).to.have.been.callCount(1);
+                    expect(bindActionToEmitterStub).to.have.been.callCount(0);
+                    expect(bindDefaultActionToSocketStub).to.have.been.callCount(0);
+                });
+
+                it('should call bindActionToEmitter', function () {
+                    checkTypeStub.onSecondCall().returns(true);
+                    options.store._actions = {
+                        socketEmitMessage: [function () {
+                        }]
+                    };
+                    bindActionsToSocket(options);
+
+                    expect(bindActionToEmitterStub).to.have.been.callCount(1);
+                    expect(bindActionToListenerStub).to.have.been.callCount(0);
+                    expect(bindDefaultActionToSocketStub).to.have.been.callCount(0);
+                });
+
+                it('should call bindDefaultActionToSocket', function () {
+                    checkTypeStub.onThirdCall().returns(true);
+                    options.defaultFnPrefix = 'socket';
+                    options.store._actions = {
+                        socketConnect: [function () {
+                        }]
+                    };
+                    bindActionsToSocket(options);
+
+                    expect(bindDefaultActionToSocketStub).to.have.been.callCount(1);
+                    expect(bindActionToListenerStub).to.have.been.callCount(0);
+                    expect(bindActionToEmitterStub).to.have.been.callCount(0);
+                });
+            });
+            describe('bindActionToListener', function () {
+                const bindActionToListener = pluginAPI.__get__('bindActionToListener');
+
+                it('should subscribe action to default channel', function () {
+                    const mockChannelName = 'Connect';
+                    const mockChannel = 'connect';
+                    const mockActionName = 'socketOnConnect';
+                    getChannelNameStub.onFirstCall().returns(mockChannelName);
+
+                    bindActionToListener(mockActionName, [onConnectStub], options);
+                    expect(socketOnStub.getCall(0).args[0]).to.eql(mockChannel);
+                    expect(socketOnStub.getCall(0).args[1]).to.be.a('function');
+                });
+
+                it('should subscribe action to MESSAGE channel', function () {
+                    const mockChannelName = 'Message';
+                    const mockChannel = 'MESSAGE';
+                    const mockActionName = 'socketOnMessage';
+                    options.converter.returns(mockChannel);
+                    getChannelNameStub.onFirstCall().returns(mockChannelName);
+
+                    bindActionToListener(mockActionName, [onMessageStub], options);
+                    expect(socketOnStub.getCall(0).args[0]).to.eql(mockChannel);
+                    expect(socketOnStub.getCall(0).args[1]).to.be.a('function');
+                });
+            });
+            describe('bindActionToEmitter', function () {
+                it('should bind socket emitter to store action', function () {
+                    const mockChannelName = 'Message';
+                    const mockFuncArr = [function () {
+                    }];
+                    const mockActionName = 'socketEmitMessage';
+                    const mockPayload = 'somePayload';
+                    getChannelNameStub.onFirstCall().returns(mockChannelName);
+                    options.store._actions = { socketEmitMessage: mockFuncArr };
+                    const bindActionToEmitter = pluginAPI.__get__('bindActionToEmitter');
+
+                    bindActionToEmitter(mockActionName, mockFuncArr, options);
+                    options.store._actions.socketEmitMessage[0](mockPayload);
+                    expect(socketEmitterStub).to.have.been.callCount(1);
+                    expect(socketEmitterStub.getCall(0).args[1]).to.eql(mockPayload);
+                });
+            });
+            describe('bindDefaultActionToSocket', function () {
+                const bindDefaultActionToSocket = pluginAPI.__get__('bindDefaultActionToSocket');
+                const checkIfSocketFnExistsStub = sinon.stub();
+                const mockChannelName = 'Connect';
+                const mockActionName = 'socketConnect';
+                let mockFuncArr;
+
+                beforeEach(function () {
+                    mockFuncArr = [function () {}];
+                    getChannelNameStub.returns(mockChannelName);
+                    options.store._actions = { 'socketConnect': mockFuncArr };
+                    pluginAPI.__Rewire__('checkIfSocketFnExists', checkIfSocketFnExistsStub);
+                });
+                afterEach(function () {
+                    socketConnectStub.reset();
+                    pluginAPI.__ResetDependency__('checkIfSocketFnExists');
+                });
+
+                it('should bind socket connect to store action', function () {
+                    checkIfSocketFnExistsStub.returns(true);
+
+                    bindDefaultActionToSocket(mockActionName, mockFuncArr, mockActionName, options);
+                    options.store._actions.socketConnect[0]();
+                    expect(socketConnectStub).to.have.been.callCount(1);
+                });
+
+                it('should ignore store action', function () {
+                    checkIfSocketFnExistsStub.returns(false);
+
+                    bindDefaultActionToSocket(mockActionName, mockFuncArr, mockActionName, options);
+                    options.store._actions.socketConnect[0]();
+                    expect(socketConnectStub).to.have.been.callCount(0);
+                });
             });
         });
         describe('checkType', function () {
@@ -195,47 +452,47 @@ describe('main', function () {
             const mockModuleNspList = ['module', 'otherModule'];
             const mockEmptyModuleNspList = [];
 
-            const normalizeStringSpy = sinon.stub();
+            const normalizeStringStub = sinon.stub();
             const checkType = pluginAPI.__get__('checkType');
 
             beforeEach(function () {
-                pluginAPI.__Rewire__('normalizeString', normalizeStringSpy);
+                pluginAPI.__Rewire__('normalizeString', normalizeStringStub);
             });
             afterEach(function () {
-                normalizeStringSpy.reset();
+                normalizeStringStub.reset();
                 pluginAPI.__ResetDependency__('normalizeString');
             });
 
             it('should return false by wrong type name and empty moduleNspList', function () {
-                normalizeStringSpy.onFirstCall().returns(mockWrongType)
+                normalizeStringStub.onFirstCall().returns(mockWrongType)
                     .onSecondCall().returns(mockPrefix);
                 const result = checkType(mockWrongType, mockPrefix, mockEmptyModuleNspList);
                 expect(result).to.eql(false);
             });
 
             it('should return false by wrong type name and moduleNspList contains namespaces', function () {
-                normalizeStringSpy.onFirstCall().returns(mockWrongType)
+                normalizeStringStub.onFirstCall().returns(mockWrongType)
                     .onSecondCall().returns(mockPrefix);
                 const result = checkType(mockWrongType, mockPrefix, mockModuleNspList);
                 expect(result).to.eql(false);
             });
 
             it('should return true by correct type name and empty moduleNspList', function () {
-                normalizeStringSpy.onFirstCall().returns(mockCorrectType)
+                normalizeStringStub.onFirstCall().returns(mockCorrectType)
                     .onSecondCall().returns(mockPrefix);
                 const result = checkType(mockCorrectType, mockPrefix, mockEmptyModuleNspList);
                 expect(result).to.eql(true);
             });
 
             it('should return true by correct type name and moduleNspList contains namespaces', function () {
-                normalizeStringSpy.onFirstCall().returns(mockCorrectType)
+                normalizeStringStub.onFirstCall().returns(mockCorrectType)
                     .onSecondCall().returns(mockPrefix);
                 const result = checkType(mockCorrectType, mockPrefix, mockModuleNspList);
                 expect(result).to.eql(true);
             });
 
             it('should return true by by type with module namespace and moduleNspList contains namespaces', function () {
-                normalizeStringSpy.onFirstCall().returns(mockTypeModuleNsp)
+                normalizeStringStub.onFirstCall().returns(mockTypeModuleNsp)
                     .onSecondCall().returns(mockPrefix);
                 const result = checkType(mockTypeModuleNsp, mockPrefix, mockModuleNspList);
                 expect(result).to.eql(true);
@@ -243,46 +500,51 @@ describe('main', function () {
         });
         describe('getChannelName', function () {
             it('should return correct channelName', function () {
-                const mockActionType = 'SomeActionSocketEmitMessage';
-                const mockPrefix = 'SocketEmit';
-                const mockResult = 'Message';
+                const mockActionType = 'SOME_SOCKET_EMIT_MESSAGE';
+                const mockPrefix = 'SOCKET_EMIT';
+                const mockResult = 'MESSAGE';
 
-                const toPascalCaseSpy = sinon.stub();
-                toPascalCaseSpy.onFirstCall().returns(mockActionType)
+                const toUppSnakeCaseStub = sinon.stub();
+                toUppSnakeCaseStub.onFirstCall().returns(mockActionType)
                     .onSecondCall().returns(mockPrefix);
-                const mockFormatters = { PascalCase: toPascalCaseSpy };
-                pluginAPI.__Rewire__('formatters', mockFormatters);
+                pluginAPI.__Rewire__('toUppSnakeCase', toUppSnakeCaseStub);
 
                 const getChannelName = pluginAPI.__get__('getChannelName');
 
                 const result = getChannelName(mockActionType, mockPrefix);
 
-                expect(toPascalCaseSpy).calledWith(mockActionType);
-                expect(toPascalCaseSpy).calledWith(mockPrefix);
+                expect(toUppSnakeCaseStub).calledWith(mockActionType);
+                expect(toUppSnakeCaseStub).calledWith(mockPrefix);
                 expect(result).to.eql(mockResult);
 
-                pluginAPI.__ResetDependency__('formatters');
+                pluginAPI.__ResetDependency__('toUppSnakeCase');
             });
         });
-        describe('isSocketFuncPersist', function () {
-            const callSocketFunction = pluginAPI.__get__('callSocketFunction');
+        describe('checkIfSocketFnExists', function () {
+            const mockSocket = { connect: function () {} };
+            const checkIfSocketFnExists = pluginAPI.__get__('checkIfSocketFnExists');
 
             it('should return true by correct function name', function () {
-                const connectStub = sinon.stub();
-                const socket = { connect: connectStub };
                 const mockCorrectFnName = 'connect';
-
-                callSocketFunction(socket, mockCorrectFnName);
-                expect(connectStub).to.have.been.callCount(1);
+                expect(checkIfSocketFnExists(mockCorrectFnName, mockSocket)).to.eql(true);
             });
 
             it('should return false by wrong function name', function () {
-                const connectStub = sinon.stub();
-                const socket = { connect: connectStub };
                 const mockWrongFnName = 'wrongName';
+                expect(checkIfSocketFnExists(mockWrongFnName, mockSocket)).to.eql(false);
+            });
+        });
+        describe('getSocketAsArr', function () {
+            const getSocketAsArr = pluginAPI.__get__('getSocketAsArr');
 
-                callSocketFunction(socket, mockWrongFnName);
-                expect(connectStub).to.have.been.callCount(0);
+            it('should put socket into array and return', function () {
+                const mockSocket = '';
+                expect(getSocketAsArr(mockSocket)).to.be.an('array').that.have.length(1);
+            });
+
+            it('should return false by wrong function name', function () {
+                const mockSocketArr = ['', ''];
+                expect(getSocketAsArr(mockSocketArr)).to.be.an('array').that.have.length(2);
             });
         });
     });
