@@ -98,7 +98,6 @@ const socketPlugin = createSocketIoPlugin(socket, {defaultFunctions: ['socketRec
 #### Set up channel name formatter
 You can provide your own channel converter function:<br />
 
-Use converter to set the property:
 ``` js
 const socketPlugin = createSocketIoPlugin(socket, {converter: _.camelCase});
 ```
