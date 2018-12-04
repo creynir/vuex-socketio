@@ -173,7 +173,7 @@ export default new Vuex.Store({
 })
 ```
 ### Notes
-**Plugin doesn't support dynamic store modules.**<br />
+**Plugin doesn't support dynamic registred store modules.**<br />
 
 ### Example
 [demo](./demo)
