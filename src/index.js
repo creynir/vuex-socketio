@@ -96,7 +96,7 @@ function bindActionToEmitter (actionName, funcArr, options) {
     funcArr.forEach((func, index) => {
         options.store._actions[actionName][index] = (payload) => {
             options.socket.emit(options.converter(channelName), payload);
-            func.call(options.store, payload);
+            return func.call(options.store, payload);
         };
     });
 }
@@ -113,8 +113,8 @@ function bindDefaultActionToSocket (actionName, funcArr, functionName, options) 
     if (checkIfSocketFnExists(socketFnName, options.socket)) {
         funcArr.forEach((func, index) => {
             options.store._actions[actionName][index] = (payload) => {
-                func.call(options.store, payload);
                 options.socket[socketFnName]();
+                return func.call(options.store, payload);
             };
         });
     }

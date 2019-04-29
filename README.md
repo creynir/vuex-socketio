@@ -3,6 +3,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/creynir/vuex-socketio/badge.svg?branch=master)](https://coveralls.io/github/creynir/vuex-socketio?branch=master)
 [![NPM version](https://img.shields.io/npm/v/vuex-socketio.svg)](https://www.npmjs.com/package/vuex-socketio)
 ![Vuex v3 compatible](https://img.shields.io/badge/Vuex%20v3-compatible-green.svg)
+![Vue CLI 3 compatible](https://img.shields.io/badge/Vue%20CLI%203-compatible-green.svg)
 <a href="https://www.npmjs.com/package/vuex-socketio"><img src="https://img.shields.io/npm/dt/vuex-socketio.svg" alt="Downloads"></a>
 
 > Vuex plugin for Socket.io-client.
@@ -173,7 +174,8 @@ export default new Vuex.Store({
 })
 ```
 ### Notes
-**Plugin doesn't support dynamic registred store modules.**<br />
+**No support for dynamic registred store modules.**<br />
+**Plugin emits first to the socket channel and then it calls related Vuex store action.**<br />
 
 ### Example
 [demo](./demo)
