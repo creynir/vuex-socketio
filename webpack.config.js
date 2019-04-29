@@ -4,7 +4,7 @@ module.exports = {
     entry: ['./src/index.js'],
     output: {
         path: path.resolve(__dirname, './dist'),
-        filename: 'vuex-socketio.js',
+        filename: 'vuex-socketio.min.js',
         library: ['VuexSocketio'],
         libraryTarget: 'umd'
     },
