@@ -179,3 +179,6 @@ export default new Vuex.Store({
 
 ### Example
 [demo](./demo)
+
+### License
+[MIT](https://choosealicense.com/licenses/mit/)
